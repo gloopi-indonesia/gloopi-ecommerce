@@ -5,7 +5,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 const UserContext = createContext({
    user: null,
    loading: true,
-   refreshUser: () => {},
+   refreshUser: () => { },
 })
 
 export const useUserContext = () => {
@@ -41,21 +41,21 @@ export const UserContextProvider = ({ children }) => {
       }
    }
 
+   const fetchData = async () => {
+      const response = await fetch(`/api/profile`, {
+         cache: 'no-store',
+      })
+
+      const json = await response.json()
+
+      if (isVariableValid(json)) {
+         setUser(json)
+         setLoading(false)
+      }
+   }
+
    useEffect(() => {
       try {
-         async function fetchData() {
-            const response = await fetch(`/api/profile`, {
-               cache: 'no-store',
-            })
-
-            const json = await response.json()
-
-            if (isVariableValid(json)) {
-               setUser(json)
-               setLoading(false)
-            }
-         }
-
          if (authenticated) fetchData()
          if (!authenticated) setLoading(false)
       } catch (error) {

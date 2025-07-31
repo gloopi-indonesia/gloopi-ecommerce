@@ -7,7 +7,7 @@ import { useUserContext } from '@/state/User'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
-export default function User({}) {
+export default function User() {
    const { authenticated } = useAuthenticated()
    const { user, loading } = useUserContext()
 

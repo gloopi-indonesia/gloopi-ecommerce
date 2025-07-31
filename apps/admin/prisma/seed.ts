@@ -35,147 +35,148 @@ async function main() {
 
    const providers = ['Parsian', 'Pasargad', 'Dey']
 
-   const owners = ['sesto@post.com']
+   const owners = ['admin@gloopi.id']
 
    const categories = [
-      'Electronics',
-      'Clothing',
-      'Books',
-      'Home & Kitchen',
-      'Toys',
-      'Jewelery',
-      'Accessories',
+      'Sarung Tangan Medis',
+      'Sarung Tangan Industri',
+      'Sarung Tangan Food Service',
+      'Sarung Tangan Konstruksi',
+      'Sarung Tangan Kimia',
+      'Sarung Tangan Disposable',
+      'Sarung Tangan Safety',
    ]
 
    const products = [
       {
-         title: 'BKID Pipe',
-         brand: 'BKID',
-         categories: ['Accessories'],
-         keywords: ['pipe', 'brushed', 'wood'],
-         price: 69.99,
-         images: ['https://lemanoosh.com/app/uploads/bkid-pipe-01.jpg'],
+         title: 'Sarung Tangan Nitrile Medis Premium',
+         brand: 'MedSafe',
+         categories: ['Sarung Tangan Medis'],
+         keywords: ['nitrile', 'medical', 'disposable', 'powder-free', 'examination'],
+         price: 85000,
+         images: ['https://images.unsplash.com/photo-1584515933487-779824d29309?w=500'],
       },
       {
-         title: 'Bang and Olufsen Speaker',
-         brand: 'Bang and Olufsen',
-         categories: ['Electronics'],
-         keywords: ['speaker', 'brushed', 'mechanical'],
-         price: 9.99,
-         images: [
-            'https://lemanoosh.com/app/uploads/BO_2019_A1_Natural_Brushed_05-768x1156.jpg',
-         ],
+         title: 'Sarung Tangan Latex Examination',
+         brand: 'HealthGuard',
+         categories: ['Sarung Tangan Medis'],
+         keywords: ['latex', 'medical', 'examination', 'sterile', 'hospital'],
+         price: 75000,
+         images: ['https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=500'],
       },
       {
-         title: 'Audio Technica Turn-table',
-         brand: 'Audio Technica',
-
-         categories: ['Electronics'],
-         keywords: ['music', 'brushed', 'mechanical'],
-         price: 12.99,
-         images: [
-            'https://lemanoosh.com/app/uploads/gerhardt-kellermann-zeitmagazin-10.jpg',
-         ],
+         title: 'Sarung Tangan Vinyl Food Grade',
+         brand: 'FoodSafe',
+         categories: ['Sarung Tangan Food Service'],
+         keywords: ['vinyl', 'food', 'restaurant', 'kitchen', 'hygiene'],
+         price: 45000,
+         images: ['https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=500'],
       },
       {
-         title: 'Monocle Sneakers',
-         brand: 'Monocle',
-
-         categories: ['Electronics'],
-         keywords: ['shoes', 'brushed', 'mechanical'],
-         price: 1.99,
-         images: [
-            'https://lemanoosh.com/app/uploads/plp-women-footwear-sneakers-04-07-768x1246.jpg',
-         ],
+         title: 'Sarung Tangan Kulit Konstruksi Heavy Duty',
+         brand: 'BuildStrong',
+         categories: ['Sarung Tangan Konstruksi'],
+         keywords: ['leather', 'construction', 'heavy-duty', 'protection', 'work'],
+         price: 125000,
+         images: ['https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=500'],
       },
       {
-         title: 'Zone2 Mens Watch',
-         brand: 'Zone2',
-
-         categories: ['Electronics'],
-         keywords: ['shoes', 'brushed', 'mechanical'],
-         price: 129.99,
-         images: ['https://lemanoosh.com/app/uploads/0055-768x1023.jpg'],
+         title: 'Sarung Tangan Cut Resistant Level 5',
+         brand: 'SafetyPro',
+         categories: ['Sarung Tangan Safety'],
+         keywords: ['cut-resistant', 'safety', 'industrial', 'protection', 'ANSI'],
+         price: 150000,
+         images: ['https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=500'],
       },
       {
-         title: 'Carl Hauser L1 Phone',
-         brand: 'Carl Hauser',
-         categories: ['Electronics'],
-         keywords: ['shoes', 'brushed', 'mechanical'],
-         price: 5.99,
-         images: [
-            'https://lemanoosh.com/app/uploads/carl-hauser-0121-768x993.jpg',
-         ],
+         title: 'Sarung Tangan Kimia Neoprene',
+         brand: 'ChemGuard',
+         categories: ['Sarung Tangan Kimia'],
+         keywords: ['neoprene', 'chemical', 'resistant', 'laboratory', 'industrial'],
+         price: 180000,
+         images: ['https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?w=500'],
       },
       {
-         title: 'Carl Hauser Scanner',
-         brand: 'Carl Hauser',
-         categories: ['Electronics'],
-         keywords: ['shoes', 'brushed', 'mechanical'],
-         price: 22.99,
-         images: [
-            'https://lemanoosh.com/app/uploads/carl-hauser-020-768x973.jpg',
-         ],
+         title: 'Sarung Tangan Mekanik Anti-Slip',
+         brand: 'MechPro',
+         categories: ['Sarung Tangan Industri'],
+         keywords: ['mechanic', 'anti-slip', 'grip', 'automotive', 'workshop'],
+         price: 95000,
+         images: ['https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=500'],
       },
       {
-         title: 'Bright Neon Helmet',
-         brand: 'Bright',
-         categories: ['Electronics'],
-         keywords: ['shoes', 'brushed', 'mechanical'],
-         price: 17.99,
-         images: [
-            'https://lemanoosh.com/app/uploads/Orange_white-_Helmet_01.jpg',
-         ],
+         title: 'Sarung Tangan Disposable PE',
+         brand: 'EcoSafe',
+         categories: ['Sarung Tangan Disposable'],
+         keywords: ['disposable', 'PE', 'polyethylene', 'food-handling', 'economical'],
+         price: 25000,
+         images: ['https://images.unsplash.com/photo-1584515933487-779824d29309?w=500'],
+      },
+      {
+         title: 'Sarung Tangan Welding Heat Resistant',
+         brand: 'WeldMaster',
+         categories: ['Sarung Tangan Industri'],
+         keywords: ['welding', 'heat-resistant', 'leather', 'industrial', 'protection'],
+         price: 165000,
+         images: ['https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=500'],
+      },
+      {
+         title: 'Sarung Tangan Surgical Sterile',
+         brand: 'SterileMax',
+         categories: ['Sarung Tangan Medis'],
+         keywords: ['surgical', 'sterile', 'latex', 'powdered', 'medical'],
+         price: 120000,
+         images: ['https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=500'],
       },
    ]
 
    const blogPosts = [
       {
-         slug: 'how-can-ai',
-         title: 'How can AI be used to generate revenue in the cryptocurrency space',
-         description: 'In this article, young and...',
-         image: 'https://media.product.which.co.uk/prod/images/original/3cc919e52b08-apple-wwcd23-vision-pro-lifestyle-working-230605.jpg',
-         categories: ['technology', 'architecture'],
+         slug: 'panduan-memilih-sarung-tangan-medis',
+         title: 'Panduan Lengkap Memilih Sarung Tangan Medis yang Tepat',
+         description: 'Tips memilih sarung tangan medis berkualitas untuk berbagai kebutuhan medis...',
+         image: 'https://images.unsplash.com/photo-1584515933487-779824d29309?w=800',
+         categories: ['medical', 'safety', 'healthcare'],
          content:
-            "In this blog post we'll go over how AI can be used to generate revenue in the cryptocurrency space. For example in spaces like DAOs ( Decentralized autonomous organizations ). Decentralized autonomous organizations, or DAOs, are using AI to manage and automate their processes in order to save on costs. This increased efficiency can lead to more revenue for the organization. <MDXImage alt='Artificial Intelligence' src='https://cdn.dribbble.com/users/1358460/screenshots/14313986/media/cf14d4ef432f3a05078df0ac1d1e7387.jpg' /> To provide a clear real-world example of how AI tools like OpenAI's GPT-3 or DALL·E 2 can be used in the DAO ( Decentralized Autonomous Organizations ) space, let's take a look at the example of a digital marketing campaign: In the past, a typical digital marketing campaign might have required hiring an external agency or consultants to manage various aspects of the project including content creation, graphic design, website development, and social media outreach. With AI tools like GPT-3 and DALL·E 2 now available, however, it's possible for DAOs to automate many of these tasks internally without needing to hire outside help. This can lead to significant cost savings for the organization while still maintaining high-quality standards. Additionally, by using AI-powered tools like GPT-3 or DALL·E 2 , DAOs can scale their operations much more easily and reach a larger audience with less effort than traditional methods require.",
+            "Memilih sarung tangan medis yang tepat sangat penting untuk keselamatan pasien dan tenaga medis. Dalam artikel ini, kami akan membahas berbagai jenis sarung tangan medis dan kegunaannya. <MDXImage alt='Sarung Tangan Medis' src='https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=500' /> Sarung tangan nitrile menjadi pilihan utama karena tahan terhadap bahan kimia dan tidak menyebabkan alergi latex. Untuk prosedur bedah, sarung tangan latex steril masih menjadi standar emas karena memberikan sensitivitas sentuhan yang optimal. Sarung tangan vinyl cocok untuk pemeriksaan rutin yang tidak memerlukan kontak dengan cairan tubuh. Pastikan memilih sarung tangan yang sesuai dengan standar FDA dan memiliki sertifikasi ISO untuk menjamin kualitas dan keamanan.",
       },
       {
-         slug: 'how-ai-generated',
-         title: 'How AI-Generated Content Will Impact the Future of Architectural Engineering',
-         description: 'AI-powered software Midjourney...',
-         image: 'https://pbs.twimg.com/media/Fx5CjjBWcAEEte0.jpg',
-         categories: ['technology', 'design', 'academic'],
+         slug: 'keselamatan-kerja-industri-konstruksi',
+         title: 'Pentingnya Sarung Tangan Safety dalam Industri Konstruksi',
+         description: 'Mengapa sarung tangan safety wajib digunakan di lokasi konstruksi...',
+         image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800',
+         categories: ['construction', 'safety', 'industrial'],
          content:
-            "With the increased use of artificial intelligence (AI) in content generation, it is important to consider how this technology will impact the future of architectural engineering. For example, OpenAI's GPT3 or DALL·E 2 can be used to generate realistic 3D models of buildings or structures. This could potentially reduce the need for architects to create these models by hand. Additionally, AI-generated content could be used to create realistic simulations of proposed buildings or structures, and to render them in very realistic manners. <MDXImage alt='AI Generated Content' src='vhttps://cdn.80.lv/api/upload/content/ef/62ab0fc526d9a.jpeg' /> This could help architects to better assess the feasibility of a project before construction begins. It is important to note that AI-generated content is not perfect and there may be some errors. However, as the technology improves, it is likely that these error rates will decrease. Additionally, AI-generated content can be customized to meet the specific needs of a project. For example, if an architect wants to see how a building will look in different lighting conditions, they can use an AI program to generate multiple versions of the same model. They can change the design of the model to make it look more original. Overall, AI-generated content has the potential to greatly impact the field of architectural engineering. As technology improves, it is likely that more and more architects will begin to use AI-generated content in their work. In conclusion, AI-generated content has the potential to revolutionize architectural engineering. It can help reduce the workload of architects and provide them with more accurate information about proposed projects.",
+            "Keselamatan kerja di industri konstruksi tidak bisa diabaikan, terutama perlindungan tangan yang rentan terhadap cedera. Sarung tangan safety dengan rating cut-resistant level 5 memberikan perlindungan maksimal terhadap benda tajam. <MDXImage alt='Sarung Tangan Konstruksi' src='https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=500' /> Sarung tangan kulit heavy-duty cocok untuk pekerjaan yang melibatkan material kasar dan panas. Untuk pekerjaan welding, gunakan sarung tangan khusus yang tahan panas hingga 500°C. Pastikan sarung tangan memiliki sertifikasi ANSI dan EN untuk memenuhi standar keselamatan internasional. Investasi pada sarung tangan berkualitas dapat mencegah kecelakaan kerja dan meningkatkan produktivitas.",
       },
       {
-         slug: 'sci-fi-environmental',
-         title: 'Sci-Fi Environmental Concept Art with Midjourney',
+         slug: 'hygiene-food-service-industry',
+         title: 'Standar Hygiene dengan Sarung Tangan Food Grade',
          description:
-            'Examples AI Generated Images can be used to enhance concept design.',
-         image: 'https://intl.nothing.tech/cdn/shop/files/PC2_2160x.jpg?v=1680179311',
-         categories: ['technology', 'design', 'game-design'],
+            'Menjaga kebersihan makanan dengan sarung tangan food grade yang tepat...',
+         image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800',
+         categories: ['food-service', 'hygiene', 'restaurant'],
          content:
-            "In this blog post we'll go over how AI can be used to generate revenue in the cryptocurrency space. For example in spaces like DAOs ( Decentralized autonomous organizations ). Decentralized autonomous organizations, or DAOs, are using AI to manage and automate their processes in order to save on costs. This increased efficiency can lead to more revenue for the organization. <MDXImage alt='Artificial Intelligence' src='https://cdn.dribbble.com/users/1358460/screenshots/14313986/media/cf14d4ef432f3a05078df0ac1d1e7387.jpg' /> To provide a clear real-world example of how AI tools like OpenAI's GPT-3 or DALL·E 2 can be used in the DAO ( Decentralized Autonomous Organizations ) space, let's take a look at the example of a digital marketing campaign: In the past, a typical digital marketing campaign might have required hiring an external agency or consultants to manage various aspects of the project including content creation, graphic design, website development, and social media outreach. With AI tools like GPT-3 and DALL·E 2 now available, however, it's possible for DAOs to automate many of these tasks internally without needing to hire outside help. This can lead to significant cost savings for the organization while still maintaining high-quality standards. Additionally, by using AI-powered tools like GPT-3 or DALL·E 2 , DAOs can scale their operations much more easily and reach a larger audience with less effort than traditional methods require.",
+            "Industri food service memerlukan standar hygiene yang ketat untuk mencegah kontaminasi makanan. Sarung tangan vinyl dan nitrile food grade menjadi pilihan utama karena tidak mengandung bahan berbahaya. <MDXImage alt='Sarung Tangan Food Service' src='https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=500' /> Sarung tangan PE disposable cocok untuk handling makanan ringan dan ekonomis untuk penggunaan sekali pakai. Penting untuk mengganti sarung tangan secara berkala dan tidak menggunakan kembali sarung tangan disposable. Pastikan sarung tangan memiliki sertifikasi FDA food contact dan bebas dari powder yang dapat mencemari makanan. Training proper glove usage juga penting untuk memastikan efektivitas penggunaan.",
       },
    ]
 
    const banners = [
       {
-         image: 'https://marketplace.canva.com/EAFgoIbXL34/1/0/1600w/canva-beige-minimalist-mother%27s-day-sale-promotional-banner-YpclZeIn87Q.jpg',
-         label: 'Something',
+         image: 'https://images.unsplash.com/photo-1584515933487-779824d29309?w=1600&h=400&fit=crop',
+         label: 'Sarung Tangan Medis Premium - Perlindungan Terbaik untuk Tenaga Kesehatan',
       },
       {
-         image: 'https://globaltv.es/wp-content/uploads/2022/10/bang-olufsen-salon.webp',
-         label: 'Something',
+         image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1600&h=400&fit=crop',
+         label: 'Sarung Tangan Konstruksi Heavy Duty - Keamanan Maksimal di Lokasi Kerja',
       },
       {
-         image: 'https://marketplace.canva.com/EAFhXw50O8Q/1/0/1600w/canva-beige-minimalist-fashion-collection-photo-collage-banner-VTuOcmKhSd4.jpg',
-         label: 'Something',
+         image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1600&h=400&fit=crop',
+         label: 'Sarung Tangan Food Grade - Jaga Hygiene Makanan Anda',
       },
       {
-         image: 'https://marketplace.canva.com/EAFOMzwkPtk/1/0/1600w/canva-chic-website-homepage-fashion-collage-banner-QtOtaBX5FCE.jpg',
-         label: 'Something',
+         image: 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=1600&h=400&fit=crop',
+         label: 'Sarung Tangan Industrial Safety - Solusi Lengkap Keselamatan Kerja',
       },
    ]
 
@@ -230,7 +231,7 @@ async function main() {
             data: {
                isAvailable: getRandomBoolean(),
                title: product.title,
-               price: getRandomFloat(20, 100, 2),
+               price: getRandomFloat(25000, 180000, 0),
                stock: getRandomIntInRange(1, 20),
                discount: getRandomIntInRange(1, 15),
                brand: {
@@ -270,8 +271,8 @@ async function main() {
    try {
       await prisma.author.create({
          data: {
-            name: 'Amirhossein Mohammadi',
-            email: 'sesto@post.com',
+            name: 'Dr. Safety Expert',
+            email: 'expert@gloopi.id',
             blogs: {
                create: blogPosts,
             },
@@ -285,8 +286,8 @@ async function main() {
 
    const user = await prisma.user.create({
       data: {
-         email: 'sesto@post.com',
-         name: 'Amirhossein Mohammadi',
+         email: 'customer@gloopi.id',
+         name: 'Customer Gloopi',
          cart: {
             create: {},
          },
@@ -318,9 +319,9 @@ async function main() {
       const order = await prisma.order.create({
          data: {
             createdAt: getRandomDate(new Date(2023, 2, 27), new Date()),
-            payable: getRandomFloat(20, 100, 2),
-            discount: getRandomFloat(20, 100, 2),
-            shipping: getRandomFloat(20, 100, 2),
+            payable: getRandomFloat(50000, 200000, 0),
+            discount: getRandomFloat(5000, 25000, 0),
+            shipping: getRandomFloat(10000, 25000, 0),
             status: 'Processing',
             user: { connect: { id: user.id } },
             isPaid: true,
@@ -328,8 +329,8 @@ async function main() {
                create: {
                   status: 'Processing',
                   isSuccessful: true,
-                  payable: getRandomFloat(20, 100, 2),
-                  refId: getRandomFloat(1, 200, 2).toString(),
+                  payable: getRandomFloat(50000, 200000, 0),
+                  refId: getRandomFloat(1000, 9999, 0).toString(),
                   user: {
                      connect: { id: user.id },
                   },

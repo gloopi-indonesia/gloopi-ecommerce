@@ -17,6 +17,9 @@
       "db:seed": "npx prisma db seed",
       "db:studio": "npx prisma studio"
    },
+   "prisma": {
+      "seed": "bun run prisma/seed.ts"
+   },
    "dependencies": {
       "@hookform/resolvers": "^3.9.0",
       "@persepolis/mail": "^1.0.9",
@@ -65,7 +68,7 @@
       "@types/react": "18.3.11",
       "@types/react-dom": "18.3.1",
       "autoprefixer": "10.4.20",
-      "eslint": "9.12.0",
+      "eslint": "8.57.1",
       "eslint-config-next": "14.2.15",
       "postcss": "8.4.47",
       "prettier": "^3.3.3",

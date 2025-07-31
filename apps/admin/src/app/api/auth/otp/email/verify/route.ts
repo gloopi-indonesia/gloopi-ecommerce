@@ -8,9 +8,8 @@ export async function POST(req: NextRequest) {
    try {
       const expiryMinutes = 30 * 24 * 60
 
-      let { email, OTP } = await req.json()
-
-      email = email.toString().toLowerCase()
+      const { email: emailRaw, OTP } = await req.json()
+      const email = emailRaw.toString().toLowerCase()
 
       if (!process.env.JWT_SECRET_KEY) {
          console.error('JWT secret key is missing')
