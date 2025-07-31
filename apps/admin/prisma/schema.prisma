@@ -8,370 +8,662 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-model User {
-  id    String  @id @default(cuid())
-  email String?  @unique
-  phone String? @unique
+// Admin user model for internal operations
+model AdminUser {
+  id       String  @id @default(cuid())
+  email    String  @unique
+  name     String
+  password String
+  role     AdminRole @default(ADMIN)
+  isActive Boolean @default(true)
 
-  name     String?
-  birthday String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  OTP                   String?
-  emailUnsubscribeToken String?  @unique @default(cuid())
-  referralCode          String? @unique
+  // Relations
+  quotationUpdates QuotationStatusLog[]
+  orderUpdates     OrderStatusLog[]
+  communications   Communication[]
+  followUps        FollowUp[]
 
-  isBanned          Boolean @default(false)
-  isEmailVerified   Boolean @default(false)
-  isPhoneVerified   Boolean @default(false)
-  isEmailSubscribed Boolean @default(false)
-  isPhoneSubscribed Boolean @default(false)
+  @@map("admin_users")
+}
 
-  cart     Cart?
-  wishlist Product[] @relation("Wishlist")
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+  STAFF
+}
 
-  orders         Order[]
+// Customer model for both B2B and B2C customers
+model Customer {
+  id    String      @id @default(cuid())
+  email String      @unique
+  phone String      @unique
+  name  String
+  type  CustomerType
+
+  // Authentication
+  password              String?
+  emailVerificationToken String?
+  isEmailVerified       Boolean @default(false)
+  isPhoneVerified       Boolean @default(false)
+
+  // Company relationship for B2B customers
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id])
+
+  // Tax information
+  taxInformation Json? // Stores NPWP and other tax details
+
+  // Communication preferences
+  communicationPreferences Json? // WhatsApp, email, phone preferences
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
   addresses      Address[]
-  payments       Payment[]
-  notifications  Notification[]
-  productReviews ProductReview[]
-  errors         Error[]
-  files          File[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Cart {
-  user   User       @relation(fields: [userId], references: [id])
-  userId String     @id
-  items  CartItem[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model CartItem {
-  cart      Cart    @relation(fields: [cartId], references: [userId])
-  cartId    String
-  product   Product @relation(fields: [productId], references: [id])
-  productId String
-  count     Int
-
-  @@unique([cartId, productId], name: "UniqueCartItem")
-}
-
-model Owner {
-  id     String  @id @default(cuid())
-  email  String  @unique
-  phone  String? @unique
-  name   String?
-  avatar String?
-  OTP    String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Author {
-  id     String  @id @default(cuid())
-  email  String  @unique
-  phone  String? @unique
-  name   String?
-  avatar String?
-  OTP    String?
-
-  blogs Blog[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Brand {
-  id          String  @id @default(cuid())
-  title       String  @unique
-  description String?
-  logo        String?
-
-  products Product[]
-}
-
-model Product {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  images      String[]
-  keywords    String[]
-  metadata    Json?
-
-  price    Float @default(100)
-  discount Float @default(0)
-  stock    Int   @default(0)
-
-  isPhysical  Boolean @default(true)
-  isAvailable Boolean @default(false)
-  isFeatured  Boolean @default(false)
-
-  orders         OrderItem[]
+  quotations     Quotation[]
+  orders         Order[]
+  invoices       Invoice[]
+  taxInvoices    TaxInvoice[]
+  communications Communication[]
+  followUps      FollowUp[]
   cartItems      CartItem[]
-  wishlists      User[]          @relation("Wishlist")
-  productReviews ProductReview[]
 
-  brand   Brand  @relation(fields: [brandId], references: [id])
-  brandId String
-
-  categories Category[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([brandId])
+  @@map("customers")
 }
 
-model Category {
-  id          String  @id @default(cuid())
-  title       String  @unique
-  description String?
-
-  products Product[]
-  banners  Banner[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+enum CustomerType {
+  B2B
+  B2C
 }
 
-model ProductReview {
-  id     String @id @default(cuid())
-  text   String
-  rating Int
+// Company model for B2B customers
+model Company {
+  id                 String  @id @default(cuid())
+  name               String
+  registrationNumber String  @unique
+  taxId              String  @unique // NPWP for Indonesian companies
+  industry           Industry
+  
+  // Contact information
+  email       String?
+  phone       String?
+  website     String?
+  contactPerson String
 
-  product   Product @relation(fields: [productId], references: [id])
-  productId String
-  user      User    @relation(fields: [userId], references: [id])
-  userId    String
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([productId, userId], name: "UniqueProductProductReview")
-  @@index([userId])
-  @@index([productId])
-}
-
-model Order {
-  id     String          @id @default(cuid())
-  number Int             @unique @default(autoincrement())
-  status OrderStatusEnum
-
-  total    Float @default(100)
-  shipping Float @default(100)
-  payable  Float @default(100)
-  tax      Float @default(100)
-  discount Float @default(0)
-
-  isPaid      Boolean @default(false)
-  isCompleted Boolean @default(false)
-
-  payments   Payment[]
-  orderItems OrderItem[]
-  refund     Refund?
-
-  discountCode   DiscountCode? @relation(fields: [discountCodeId], references: [id])
-  discountCodeId String?
-  address        Address?      @relation(fields: [addressId], references: [id])
-  addressId      String?
-  user           User          @relation(fields: [userId], references: [id])
-  userId         String
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([userId])
-  @@index([addressId])
-  @@index([discountCodeId])
-}
-
-model OrderItem {
-  order     Order   @relation(fields: [orderId], references: [id])
-  orderId   String
-  product   Product @relation(fields: [productId], references: [id])
-  productId String
-  count     Int
-  price     Float
-  discount  Float
-
-  @@unique([orderId, productId], name: "UniqueOrderItem")
-}
-
-enum OrderStatusEnum {
-  Processing
-  Shipped
-  Delivered
-  ReturnProcessing
-  ReturnCompleted
-  Cancelled
-  RefundProcessing
-  RefundCompleted
-  Denied
-}
-
-model Address {
-  id         String @id @default(cuid())
-  country    String @default("IRI")
+  // Address
   address    String
   city       String
-  phone      String
+  province   String
   postalCode String
-
-  user   User    @relation(fields: [userId], references: [id])
-  userId String
-  orders Order[]
-
-  createdAt DateTime @default(now())
-
-  @@index([userId])
-}
-
-model Notification {
-  id      String  @id @default(cuid())
-  content String
-  isRead  Boolean @default(false)
-
-  user   User   @relation(fields: [userId], references: [id])
-  userId String
+  country    String @default("Indonesia")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([userId])
+  // Relations
+  customers   Customer[]
+  taxInvoices TaxInvoice[]
+
+  @@map("companies")
 }
 
-model DiscountCode {
-  id                String   @id @default(cuid())
-  code              String   @unique
-  stock             Int      @default(1)
-  description       String?
-  percent           Int
-  maxDiscountAmount Float    @default(1)
-  startDate         DateTime
-  endDate           DateTime
-
-  order Order[]
-
-  createdAt DateTime @default(now())
+enum Industry {
+  MEDICAL
+  MANUFACTURING
+  FOOD
+  OTHER
 }
 
-model Refund {
-  id     String @id @default(cuid())
-  amount Float
-  reason String
-
-  order   Order  @relation(fields: [orderId], references: [id])
-  orderId String @unique
+// Cart item model (no separate cart model needed)
+model CartItem {
+  id         String @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product @relation(fields: [productId], references: [id])
+  quantity   Int
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([orderId])
+  @@unique([customerId, productId], name: "UniqueCustomerProduct")
+  @@map("cart_items")
 }
 
-model Payment {
-  id     String            @id @default(cuid())
-  number Int               @unique @default(autoincrement())
-  status PaymentStatusEnum
-
-  refId    String  @unique
-  cardPan  String?
-  cardHash String?
-  fee      Float?
-
-  isSuccessful Boolean @default(false)
-  payable      Float
-
-  provider   PaymentProvider @relation(fields: [providerId], references: [id])
-  providerId String
-  user       User            @relation(fields: [userId], references: [id])
-  userId     String
-  order      Order           @relation(fields: [orderId], references: [id])
-  orderId    String
+// Address model for customers and companies
+model Address {
+  id         String @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  
+  // Address details
+  label      String? // e.g., "Home", "Office", "Warehouse"
+  address    String
+  city       String
+  province   String
+  postalCode String
+  country    String @default("Indonesia")
+  phone      String?
+  
+  // Default address flag
+  isDefault Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([userId])
-  @@index([providerId])
-  @@index([orderId])
+  // Relations
+  quotations Quotation[]
+  orders     Order[]
+
+  @@map("addresses")
 }
 
-enum PaymentStatusEnum {
-  Processing
-  Paid
-  Failed
-  Denied
-}
-
-model PaymentProvider {
+// Brand model for product categorization
+model Brand {
   id          String  @id @default(cuid())
-  title       String  @unique
+  name        String  @unique
   description String?
-  websiteUrl  String?
-  isActive    Boolean @default(false)
-
-  orders Payment[]
-}
-
-model Error {
-  id String @id @default(cuid())
-
-  error String
-
-  user   User?   @relation(fields: [userId], references: [id])
-  userId String?
-
-  createdAt DateTime @default(now())
-
-  @@index([userId])
-}
-
-model File {
-  id String @id @default(cuid())
-
-  url String
-
-  user   User   @relation(fields: [userId], references: [id])
-  userId String
-
-  createdAt DateTime @default(now())
-
-  @@index([userId])
-}
-
-model Blog {
-  slug        String  @id
-  title       String
-  image       String
-  description String
-  content     String? @db.Text
-
-  categories String[]
-  keywords   String[]
-
-  author   Author @relation(fields: [authorId], references: [id])
-  authorId String
+  logo        String?
+  isActive    Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([authorId])
+  // Relations
+  products Product[]
+
+  @@map("brands")
 }
 
-model Banner {
-  id String @id @default(cuid())
-
-  label String
-  image String
-
-  categories Category[]
+// Product model for glove products
+model Product {
+  id          String   @id @default(cuid())
+  sku         String   @unique
+  name        String
+  description String?
+  images      String[] // Cloudinary URLs
+  
+  // Product specifications
+  specifications Json? // Material, size, thickness, etc.
+  
+  // Categorization
+  useCase  UseCase
+  brandId  String
+  brand    Brand @relation(fields: [brandId], references: [id])
+  
+  // Pricing (stored in IDR cents for precision)
+  basePrice Int // Base price in IDR cents
+  
+  // Inventory
+  stock       Int     @default(0)
+  minStock    Int     @default(0)
+  isActive    Boolean @default(true)
+  isFeatured  Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Relations
+  categories      ProductCategory[]
+  pricingTiers    PricingTier[]
+  cartItems       CartItem[]
+  quotationItems  QuotationItem[]
+  orderItems      OrderItem[]
+  invoiceItems    InvoiceItem[]
+
+  @@index([brandId])
+  @@index([useCase])
+  @@map("products")
+}
+
+enum UseCase {
+  MEDICAL
+  MANUFACTURING
+  FOOD
+  GENERAL
+}
+
+// Product category model
+model Category {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  description String?
+  parentId    String?
+  parent      Category? @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryHierarchy")
+  
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  products ProductCategory[]
+
+  @@map("categories")
+}
+
+// Many-to-many relationship between products and categories
+model ProductCategory {
+  productId  String
+  product    Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([productId, categoryId])
+  @@map("product_categories")
+}
+
+// Pricing tier model for bulk pricing
+model PricingTier {
+  id          String @id @default(cuid())
+  productId   String
+  product     Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  minQuantity Int
+  maxQuantity Int?
+  pricePerUnit Int // Price in IDR cents
+  
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId])
+  @@map("pricing_tiers")
+}
+
+// Quotation model - core of the business process
+model Quotation {
+  id              String @id @default(cuid())
+  quotationNumber String @unique
+  
+  // Customer information
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+  
+  // Status and workflow
+  status QuotationStatus @default(PENDING)
+  
+  // Pricing (in IDR cents)
+  subtotal    Int
+  taxAmount   Int @default(0)
+  totalAmount Int
+  
+  // Shipping information
+  shippingAddressId String?
+  shippingAddress   Address? @relation(fields: [shippingAddressId], references: [id])
+  
+  // Validity and notes
+  validUntil DateTime
+  notes      String?
+  
+  // Conversion tracking
+  convertedOrderId String? @unique
+  convertedOrder   Order?  @relation("QuotationToOrder")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  items          QuotationItem[]
+  statusLogs     QuotationStatusLog[]
+  communications Communication[]
+  followUps      FollowUp[]
+
+  @@index([customerId])
+  @@index([status])
+  @@map("quotations")
+}
+
+enum QuotationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CONVERTED
+  EXPIRED
+}
+
+// Quotation items
+model QuotationItem {
+  id          String @id @default(cuid())
+  quotationId String
+  quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product @relation(fields: [productId], references: [id])
+  
+  quantity    Int
+  unitPrice   Int // Price in IDR cents at time of quotation
+  totalPrice  Int // quantity * unitPrice
+  notes       String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([quotationId])
+  @@index([productId])
+  @@map("quotation_items")
+}
+
+// Quotation status change log
+model QuotationStatusLog {
+  id          String @id @default(cuid())
+  quotationId String
+  quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  
+  fromStatus QuotationStatus?
+  toStatus   QuotationStatus
+  notes      String?
+  
+  // Admin who made the change
+  adminUserId String
+  adminUser   AdminUser @relation(fields: [adminUserId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([quotationId])
+  @@map("quotation_status_logs")
+}
+
+// Order model - converted from approved quotations
+model Order {
+  id          String @id @default(cuid())
+  orderNumber String @unique
+  
+  // Source quotation
+  quotationId String @unique
+  quotation   Quotation @relation("QuotationToOrder", fields: [quotationId], references: [id])
+  
+  // Customer information
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+  
+  // Status and workflow
+  status OrderStatus @default(NEW)
+  
+  // Pricing (in IDR cents)
+  subtotal    Int
+  taxAmount   Int @default(0)
+  totalAmount Int
+  
+  // Shipping information
+  shippingAddressId String
+  shippingAddress   Address @relation(fields: [shippingAddressId], references: [id])
+  trackingNumber    String?
+  
+  // Fulfillment dates
+  shippedAt   DateTime?
+  deliveredAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  items      OrderItem[]
+  statusLogs OrderStatusLog[]
+  invoice    Invoice?
+
+  @@index([customerId])
+  @@index([status])
+  @@map("orders")
+}
+
+enum OrderStatus {
+  NEW
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+// Order items
+model OrderItem {
+  id        String @id @default(cuid())
+  orderId   String
+  order     Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  
+  quantity   Int
+  unitPrice  Int // Price in IDR cents at time of order
+  totalPrice Int // quantity * unitPrice
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+// Order status change log
+model OrderStatusLog {
+  id      String @id @default(cuid())
+  orderId String
+  order   Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  fromStatus OrderStatus?
+  toStatus   OrderStatus
+  notes      String?
+  
+  // Admin who made the change
+  adminUserId String
+  adminUser   AdminUser @relation(fields: [adminUserId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+  @@map("order_status_logs")
+}
+
+// Invoice model
+model Invoice {
+  id            String @id @default(cuid())
+  invoiceNumber String @unique
+  
+  // Order relationship
+  orderId  String @unique
+  order    Order @relation(fields: [orderId], references: [id])
+  
+  // Customer information
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+  
+  // Pricing (in IDR cents)
+  subtotal    Int
+  taxAmount   Int @default(0)
+  totalAmount Int
+  
+  // Payment information
+  status        InvoiceStatus @default(PENDING)
+  dueDate       DateTime
+  paidAt        DateTime?
+  paymentMethod String?
+  paymentNotes  String?
+  
+  // Tax invoice request
+  taxInvoiceRequested Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  items       InvoiceItem[]
+  taxInvoice  TaxInvoice?
+
+  @@index([customerId])
+  @@index([status])
+  @@map("invoices")
+}
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+// Invoice items
+model InvoiceItem {
+  id        String @id @default(cuid())
+  invoiceId String
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  
+  quantity   Int
+  unitPrice  Int // Price in IDR cents
+  totalPrice Int // quantity * unitPrice
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([invoiceId])
+  @@index([productId])
+  @@map("invoice_items")
+}
+
+// Tax invoice model for PPN compliance
+model TaxInvoice {
+  id               String @id @default(cuid())
+  taxInvoiceNumber String @unique // Following Indonesian PPN format
+  
+  // Invoice relationship
+  invoiceId String @unique
+  invoice   Invoice @relation(fields: [invoiceId], references: [id])
+  
+  // Customer and company information
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+  companyId  String
+  company    Company @relation(fields: [companyId], references: [id])
+  
+  // PPN calculation (in IDR cents)
+  ppnRate       Float @default(0.11) // 11% PPN rate in Indonesia
+  ppnAmount     Int
+  totalWithPPN  Int
+  
+  // Issue information
+  issuedAt DateTime
+  issuedBy String // Admin user name
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([customerId])
+  @@index([companyId])
+  @@map("tax_invoices")
+}
+
+// Communication model for tracking customer interactions
+model Communication {
+  id         String @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+  
+  // Related entities
+  quotationId String?
+  quotation   Quotation? @relation(fields: [quotationId], references: [id])
+  orderId     String?
+  
+  // Communication details
+  type      CommunicationType
+  direction CommunicationDirection
+  content   String
+  status    CommunicationStatus @default(SENT)
+  
+  // External message ID (for WhatsApp, email tracking)
+  externalId String?
+  
+  // Admin who initiated the communication
+  adminUserId String
+  adminUser   AdminUser @relation(fields: [adminUserId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([customerId])
+  @@index([quotationId])
+  @@map("communications")
+}
+
+enum CommunicationType {
+  WHATSAPP
+  PHONE
+  EMAIL
+  SMS
+}
+
+enum CommunicationDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum CommunicationStatus {
+  SENT
+  DELIVERED
+  READ
+  FAILED
+}
+
+// Follow-up model for scheduling customer follow-ups
+model FollowUp {
+  id         String @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+  
+  // Related entities
+  quotationId String?
+  quotation   Quotation? @relation(fields: [quotationId], references: [id])
+  orderId     String?
+  
+  // Follow-up details
+  type        FollowUpType
+  scheduledAt DateTime
+  completedAt DateTime?
+  notes       String?
+  status      FollowUpStatus @default(PENDING)
+  
+  // Admin who created the follow-up
+  adminUserId String
+  adminUser   AdminUser @relation(fields: [adminUserId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([customerId])
+  @@index([scheduledAt])
+  @@index([status])
+  @@map("follow_ups")
+}
+
+enum FollowUpType {
+  QUOTATION_FOLLOW_UP
+  PAYMENT_REMINDER
+  DELIVERY_UPDATE
+  GENERAL_CHECK_IN
+}
+
+enum FollowUpStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
+// System configuration model for storing app settings
+model SystemConfig {
+  id    String @id @default(cuid())
+  key   String @unique
+  value Json
+  
+  description String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("system_config")
 }

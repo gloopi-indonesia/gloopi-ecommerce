@@ -11,5 +11,6 @@
       "./apps/storefront",
       "./apps/admin",
       "./apps/storefront/.react-email"
-   ]
+   ],
+   "kiroAgent.configureMCP": "Enabled"
 }
