@@ -27,12 +27,17 @@ export async function POST(req: NextRequest) {
             },
          })
 
-         await sendMail({
-            name: config.name,
-            to: email,
-            subject: 'Verify your email.',
-            html: await render(Mail({ code: OTP, name: config.name })),
-         })
+         // Skip email sending in development if credentials are not configured
+         if (process.env.NODE_ENV === 'production' || (process.env.MAIL_SMTP_USER && process.env.MAIL_SMTP_PASS)) {
+            await sendMail({
+               name: config.name,
+               to: email,
+               subject: 'Verify your email.',
+               html: await render(Mail({ code: OTP, name: config.name })),
+            })
+         } else {
+            console.log(`Development mode: OTP for ${email} is: ${OTP}`)
+         }
 
          return new NextResponse(
             JSON.stringify({
