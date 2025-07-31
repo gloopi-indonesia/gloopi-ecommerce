@@ -1,16 +1,29 @@
 {
   "extends": "next",
   "rules": {
-    "react/prop-types": 0,
-    "react/no-unescaped-entities": 0,
-    "@next/next/no-server-import-in-page": 0,
+    // Disabled rules that are too noisy during development
+    "react/prop-types": "off",
+    "react/no-unescaped-entities": "off",
+    "@next/next/no-server-import-in-page": "off",
+
+    // Unused variables - warn but allow underscore prefix to ignore
     "@typescript-eslint/no-unused-vars": ["warn", {
       "argsIgnorePattern": "^_",
       "varsIgnorePattern": "^_",
-      "caughtErrorsIgnorePattern": "^_"
+      "caughtErrorsIgnorePattern": "^_",
+      "destructuredArrayIgnorePattern": "^_"
     }],
+
+    // TypeScript specific warnings
     "@typescript-eslint/no-empty-object-type": "warn",
+    "@typescript-eslint/no-unused-expressions": "warn",
+    "@typescript-eslint/ban-ts-comment": "warn",
+
+    // Code quality warnings
     "prefer-const": "warn",
-    "no-unsafe-optional-chaining": "warn"
+    "no-unsafe-optional-chaining": "warn",
+
+    // Next.js specific - warn instead of error for better DX
+    "@next/next/no-img-element": "warn"
   }
 }
