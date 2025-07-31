@@ -1,0 +1,2 @@
+- ALWAYS to check linting by run `bun run lint` after making the changes
+- ALWAYS to type-check by run `bun run type-check` after making the changes
