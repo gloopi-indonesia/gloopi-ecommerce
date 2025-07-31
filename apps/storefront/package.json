@@ -1,5 +1,5 @@
 {
-   "name": "next-prisma-tailwind-ecommerce",
+   "name": "gloopi-storefront",
    "author": {
       "name": "Sesto",
       "url": "https://github.com/sesto-dev"
@@ -13,11 +13,6 @@
       "type-check": "tsc --noEmit",
       "postinstall": "prisma generate",
       "update": "npx npm-check-updates -u",
-      "db:generate": "npx prisma generate",
-      "db:format": "npx prisma format",
-      "db:reset": "npx prisma db push --force-reset",
-      "db:push": "npx prisma db push",
-      "db:seed": "npx prisma db seed",
       "db:studio": "npx prisma studio"
    },
    "dependencies": {

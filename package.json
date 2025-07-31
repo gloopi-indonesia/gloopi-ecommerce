@@ -14,7 +14,12 @@
       "build": "turbo run build",
       "start": "turbo run start",
       "lint": "turbo run lint",
-      "type-check": "turbo run type-check"
+      "type-check": "turbo run type-check",
+      "db:generate": "turbo run db:generate",
+      "db:format": "turbo run db:format",
+      "db:reset": "turbo run db:reset",
+      "db:push": "turbo run db:push",
+      "db:seed": "turbo run db:seed"
    },
    "author": {
       "name": "Gloopi Indonesia",

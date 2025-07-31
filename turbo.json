@@ -20,6 +20,21 @@
     },
     "type-check": {
       "dependsOn": ["^type-check"]
+    },
+    "db:generate": {
+      "cache": false
+    },
+    "db:format": {
+      "cache": false
+    },
+    "db:reset": {
+      "cache": false
+    },
+    "db:push": {
+      "cache": false
+    },
+    "db:seed": {
+      "cache": false
     }
   }
 }
