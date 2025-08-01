@@ -74,8 +74,8 @@
   - Write unit tests for tax invoice functionality
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 11.1, 11.2, 11.3, 11.4, 11.5_
 
-- [ ] 7. Build WhatsApp integration system
-- [ ] 7.1 Implement WhatsApp Business API service
+- [-] 7. Build WhatsApp integration system
+- [x] 7.1 Implement WhatsApp Business API service
   - Create WhatsAppService class with message sending capabilities
   - Implement webhook handling for incoming messages
   - Add message template management for common scenarios
