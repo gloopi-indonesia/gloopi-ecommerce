@@ -13,22 +13,22 @@
   - Create user registration and profile management interfaces
   - _Requirements: 4.1, 4.2, 4.3_
 
-- [ ] 3. Build core business logic services
-- [ ] 3.1 Implement quotation management service
+- [x] 3. Build core business logic services
+- [x] 3.1 Implement quotation management service
   - Create QuotationManager class with CRUD operations
   - Implement quotation status workflow (pending → approved → converted)
   - Add quotation number generation with Indonesian formatting
   - Write unit tests for quotation business logic
   - _Requirements: 1.1, 1.2, 1.3, 1.4_
 
-- [ ] 3.2 Implement order processing service
+- [x] 3.2 Implement order processing service
   - Create OrderProcessor class for order lifecycle management
   - Implement order status transitions (new → processing → shipped → delivered)
   - Add invoice generation functionality with IDR currency handling
   - Write unit tests for order processing logic
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
 
-- [ ] 3.3 Implement customer management service
+- [x] 3.3 Implement customer management service
   - Create CustomerManager class for B2B and B2C customer handling
   - Implement company profile management with tax information
   - Add customer history tracking and profile updates
