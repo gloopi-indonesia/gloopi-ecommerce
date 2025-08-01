@@ -1,54 +1,73 @@
-import prisma from '@/lib/prisma'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { categoryManager } from '@/lib/services/category-manager'
 
-export async function POST(req: Request) {
-   try {
-      const userId = req.headers.get('X-USER-ID')
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const includeInactive = searchParams.get('includeInactive') === 'true'
+    const rootOnly = searchParams.get('rootOnly') === 'true'
 
-      if (!userId) {
-         return new NextResponse('Unauthorized', { status: 401 })
-      }
+    let categories
+    if (rootOnly) {
+      categories = await categoryManager.getRootCategories()
+    } else {
+      categories = await categoryManager.getCategories(includeInactive)
+    }
 
-      const body = await req.json()
-
-      const { title, description, bannerId } = body
-
-      if (!title) {
-         return new NextResponse('Name is required', { status: 400 })
-      }
-
-      if (!bannerId) {
-         return new NextResponse('Banner ID is required', { status: 400 })
-      }
-
-      // Create a new category
-      const category = await prisma.category.create({
-         data: {
-            title,
-            description,
-            banners: {
-               connect: {
-                  id: bannerId,
-               },
-            },
-         },
-      })
-
-      return NextResponse.json(category)
-   } catch (error) {
-      console.error('[CATEGORIES_POST]', error)
-      return new NextResponse('Internal error', { status: 500 })
-   }
+    return NextResponse.json({
+      success: true,
+      data: categories
+    })
+  } catch (error) {
+    console.error('Error fetching categories:', error)
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'FETCH_CATEGORIES_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to fetch categories'
+        }
+      },
+      { status: 500 }
+    )
+  }
 }
 
-export async function GET(_req: Request) {
-   try {
-      // Find all categories
-      const categories = await prisma.category.findMany()
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json()
 
-      return NextResponse.json(categories)
-   } catch (error) {
-      console.error('[CATEGORIES_GET]', error)
-      return new NextResponse('Internal error', { status: 500 })
-   }
+    // Validate required fields
+    if (!body.name) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'Category name is required'
+          }
+        },
+        { status: 400 }
+      )
+    }
+
+    const category = await categoryManager.createCategory(body)
+
+    return NextResponse.json({
+      success: true,
+      data: category
+    }, { status: 201 })
+  } catch (error) {
+    console.error('Error creating category:', error)
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'CREATE_CATEGORY_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to create category'
+        }
+      },
+      { status: 500 }
+    )
+  }
 }

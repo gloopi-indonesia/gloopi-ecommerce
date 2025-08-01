@@ -1,44 +1,68 @@
-import prisma from '@/lib/prisma'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { brandManager } from '@/lib/services/brand-manager'
 
-export async function POST(req: Request) {
-   try {
-      const userId = req.headers.get('X-USER-ID')
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const includeInactive = searchParams.get('includeInactive') === 'true'
+    const includeStats = searchParams.get('includeStats') === 'true'
 
-      if (!userId) {
-         return new NextResponse('Unauthorized', { status: 401 })
-      }
+    const brands = await brandManager.getBrands(includeInactive, includeStats)
 
-      const body = await req.json()
-
-      const { title, description, logo } = body
-
-      if (!title) {
-         return new NextResponse('Name is required', { status: 400 })
-      }
-
-      const brand = await prisma.brand.create({
-         data: {
-            title,
-            description,
-            logo,
-         },
-      })
-
-      return NextResponse.json(brand)
-   } catch (error) {
-      console.error('[BRANDS_POST]', error)
-      return new NextResponse('Internal error', { status: 500 })
-   }
+    return NextResponse.json({
+      success: true,
+      data: brands
+    })
+  } catch (error) {
+    console.error('Error fetching brands:', error)
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'FETCH_BRANDS_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to fetch brands'
+        }
+      },
+      { status: 500 }
+    )
+  }
 }
 
-export async function GET(_req: Request) {
-   try {
-      const brands = await prisma.brand.findMany({})
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json()
 
-      return NextResponse.json(brands)
-   } catch (error) {
-      console.error('[BRANDS_GET]', error)
-      return new NextResponse('Internal error', { status: 500 })
-   }
+    // Validate required fields
+    if (!body.name) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'Brand name is required'
+          }
+        },
+        { status: 400 }
+      )
+    }
+
+    const brand = await brandManager.createBrand(body)
+
+    return NextResponse.json({
+      success: true,
+      data: brand
+    }, { status: 201 })
+  } catch (error) {
+    console.error('Error creating brand:', error)
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'CREATE_BRAND_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to create brand'
+        }
+      },
+      { status: 500 }
+    )
+  }
 }
