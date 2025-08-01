@@ -52,6 +52,11 @@ export function MainNav({
          active: pathname.includes(`/payments`),
       },
       {
+         href: `/tax-invoices`,
+         label: 'Tax Invoices',
+         active: pathname.includes(`/tax-invoices`),
+      },
+      {
          href: `/banners`,
          label: 'Banners',
          active: pathname.includes(`/banners`),

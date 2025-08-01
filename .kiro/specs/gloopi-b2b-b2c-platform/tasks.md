@@ -65,7 +65,7 @@
   - Create customer search and filtering functionality
   - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5_
 
-- [ ] 6. Implement PPN tax invoice system
+- [x] 6. Implement PPN tax invoice system
   - Create TaxInvoice model with Indonesian PPN compliance
   - Implement tax invoice number generation following Indonesian standards
   - Build tax invoice generation interface for admin

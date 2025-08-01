@@ -7,9 +7,11 @@ import {
    CardTitle,
 } from '@/components/ui/card'
 import { Heading } from '@/components/ui/heading'
+import { TaxInvoiceGenerator } from '@/components/tax-invoice-generator'
 import prisma from '@/lib/prisma'
 import { format } from 'date-fns'
 import { CheckIcon, FileTextIcon, XIcon } from 'lucide-react'
+import Link from 'next/link'
 
 const InvoiceDetailPage = async ({ params }: { params: { invoiceId: string } }) => {
    const invoice = await prisma.invoice.findUnique({
@@ -200,38 +202,99 @@ const InvoiceDetailPage = async ({ params }: { params: { invoiceId: string } }) 
                      </CardContent>
                   </Card>
 
-                  {invoice.taxInvoice && (
-                     <Card>
-                        <CardHeader>
-                           <CardTitle>Tax Invoice (PPN)</CardTitle>
-                           <CardDescription>Indonesian tax invoice details</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
+                  <Card>
+                     <CardHeader>
+                        <div className="flex items-center justify-between">
                            <div>
-                              <p className="text-sm font-medium text-muted-foreground">Tax Invoice Number</p>
-                              <p className="font-medium">{invoice.taxInvoice.taxInvoiceNumber}</p>
+                              <CardTitle>Tax Invoice (PPN)</CardTitle>
+                              <CardDescription>Indonesian tax invoice details</CardDescription>
                            </div>
-                           <div className="grid grid-cols-2 gap-4">
+                           {!invoice.taxInvoice && (
+                              <TaxInvoiceGenerator 
+                                 invoice={{
+                                    id: invoice.id,
+                                    invoiceNumber: invoice.invoiceNumber,
+                                    status: invoice.status,
+                                    totalAmount: invoice.totalAmount,
+                                    customer: {
+                                       id: invoice.customer.id,
+                                       name: invoice.customer.name,
+                                       type: invoice.customer.type,
+                                       companyId: invoice.customer.companyId,
+                                       company: invoice.customer.company ? {
+                                          id: invoice.customer.company.id,
+                                          name: invoice.customer.company.name,
+                                          taxId: invoice.customer.company.taxId,
+                                          registrationNumber: invoice.customer.company.registrationNumber
+                                       } : undefined
+                                    },
+                                    taxInvoiceRequested: invoice.taxInvoiceRequested
+                                 }}
+                                 onTaxInvoiceCreated={() => {
+                                    // Refresh the page to show the new tax invoice
+                                    window.location.reload()
+                                 }}
+                              />
+                           )}
+                        </div>
+                     </CardHeader>
+                     <CardContent className="space-y-4">
+                        {invoice.taxInvoice ? (
+                           <>
                               <div>
-                                 <p className="text-sm font-medium text-muted-foreground">PPN Rate</p>
-                                 <p className="text-sm">{(invoice.taxInvoice.ppnRate * 100).toFixed(0)}%</p>
+                                 <p className="text-sm font-medium text-muted-foreground">Tax Invoice Number</p>
+                                 <p className="font-medium">{invoice.taxInvoice.taxInvoiceNumber}</p>
+                              </div>
+                              <div className="grid grid-cols-2 gap-4">
+                                 <div>
+                                    <p className="text-sm font-medium text-muted-foreground">PPN Rate</p>
+                                    <p className="text-sm">{(invoice.taxInvoice.ppnRate * 100).toFixed(0)}%</p>
+                                 </div>
+                                 <div>
+                                    <p className="text-sm font-medium text-muted-foreground">PPN Amount</p>
+                                    <p className="text-sm">{formatIDR(invoice.taxInvoice.ppnAmount)}</p>
+                                 </div>
                               </div>
                               <div>
-                                 <p className="text-sm font-medium text-muted-foreground">PPN Amount</p>
-                                 <p className="text-sm">{formatIDR(invoice.taxInvoice.ppnAmount)}</p>
+                                 <p className="text-sm font-medium text-muted-foreground">Total with PPN</p>
+                                 <p className="text-lg font-bold">{formatIDR(invoice.taxInvoice.totalWithPPN)}</p>
                               </div>
+                              <div>
+                                 <p className="text-sm font-medium text-muted-foreground">Issued</p>
+                                 <p className="text-sm">{format(invoice.taxInvoice.issuedAt, 'PPP')}</p>
+                              </div>
+                              <div className="flex gap-2">
+                                 <Link 
+                                    href={`/tax-invoices/${invoice.taxInvoice.id}`}
+                                    className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3"
+                                 >
+                                    <FileTextIcon className="h-4 w-4 mr-2" />
+                                    View Details
+                                 </Link>
+                                 <a 
+                                    href={`/api/tax-invoices/${invoice.taxInvoice.id}/pdf`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3"
+                                 >
+                                    <FileTextIcon className="h-4 w-4 mr-2" />
+                                    Download PDF
+                                 </a>
+                              </div>
+                           </>
+                        ) : (
+                           <div className="text-center py-8">
+                              <FileTextIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                              <p className="text-muted-foreground">
+                                 {invoice.taxInvoiceRequested 
+                                    ? 'Tax invoice has been requested and is being processed'
+                                    : 'No tax invoice has been created for this invoice'
+                                 }
+                              </p>
                            </div>
-                           <div>
-                              <p className="text-sm font-medium text-muted-foreground">Total with PPN</p>
-                              <p className="text-lg font-bold">{formatIDR(invoice.taxInvoice.totalWithPPN)}</p>
-                           </div>
-                           <div>
-                              <p className="text-sm font-medium text-muted-foreground">Issued</p>
-                              <p className="text-sm">{format(invoice.taxInvoice.issuedAt, 'PPP')}</p>
-                           </div>
-                        </CardContent>
-                     </Card>
-                  )}
+                        )}
+                     </CardContent>
+                  </Card>
                </div>
             </div>
          </div>
