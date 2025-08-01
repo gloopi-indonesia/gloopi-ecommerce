@@ -12,19 +12,9 @@ export function MainNav({
 
    const routes = [
       {
-         href: `/banners`,
-         label: 'Banners',
-         active: pathname.includes(`/banners`),
-      },
-      {
-         href: `/categories`,
-         label: 'Categories',
-         active: pathname.includes(`/categories`),
-      },
-      {
-         href: `/products`,
-         label: 'Products',
-         active: pathname.includes(`/products`),
+         href: `/quotations`,
+         label: 'Quotations',
+         active: pathname.includes(`/quotations`),
       },
       {
          href: `/orders`,
@@ -32,19 +22,39 @@ export function MainNav({
          active: pathname.includes(`/orders`),
       },
       {
-         href: `/payments`,
-         label: 'Payments',
-         active: pathname.includes(`/payments`),
+         href: `/products`,
+         label: 'Products',
+         active: pathname.includes(`/products`),
       },
       {
-         href: `/users`,
-         label: 'Users',
-         active: pathname.includes(`/users`),
+         href: `/categories`,
+         label: 'Categories',
+         active: pathname.includes(`/categories`),
       },
       {
          href: `/brands`,
          label: 'Brands',
          active: pathname.includes(`/brands`),
+      },
+      {
+         href: `/customers`,
+         label: 'Customers',
+         active: pathname.includes(`/customers`),
+      },
+      {
+         href: `/companies`,
+         label: 'Companies',
+         active: pathname.includes(`/companies`),
+      },
+      {
+         href: `/payments`,
+         label: 'Payments',
+         active: pathname.includes(`/payments`),
+      },
+      {
+         href: `/banners`,
+         label: 'Banners',
+         active: pathname.includes(`/banners`),
       },
       {
          href: `/codes`,

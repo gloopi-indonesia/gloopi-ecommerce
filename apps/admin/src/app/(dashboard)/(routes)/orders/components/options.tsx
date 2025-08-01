@@ -33,7 +33,7 @@ export function SortBy({ initialData }) {
    const pathname = usePathname()
    const searchParams = useSearchParams()
 
-   const [value, setValue] = React.useState('featured')
+   const [value, setValue] = React.useState('newest')
 
    useEffect(() => {
       if (isVariableValid(initialData)) setValue(initialData)
@@ -68,9 +68,10 @@ export function SortBy({ initialData }) {
             <SelectValue placeholder="Sort By" />
          </SelectTrigger>
          <SelectContent>
-            <SelectItem value="featured">Featured</SelectItem>
-            <SelectItem value="most_expensive">Most Expensive</SelectItem>
-            <SelectItem value="least_expensive">Least Expensive</SelectItem>
+            <SelectItem value="newest">Newest First</SelectItem>
+            <SelectItem value="oldest">Oldest First</SelectItem>
+            <SelectItem value="highest_amount">Highest Amount</SelectItem>
+            <SelectItem value="lowest_amount">Lowest Amount</SelectItem>
          </SelectContent>
       </Select>
    )
