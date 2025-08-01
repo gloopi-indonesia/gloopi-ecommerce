@@ -9,7 +9,7 @@ export async function POST(req: Request) {
          return new NextResponse('Unauthorized', { status: 401 })
       }
 
-      const { data } = await req.json()
+      const { data: _data } = await req.json()
 
       const products = await prisma.product.findMany()
 
@@ -29,8 +29,8 @@ export async function GET(req: Request) {
       }
 
       const { searchParams } = new URL(req.url)
-      const categoryId = searchParams.get('categoryId') || undefined
-      const isFeatured = searchParams.get('isFeatured')
+      const _categoryId = searchParams.get('categoryId') || undefined
+      const _isFeatured = searchParams.get('isFeatured')
 
       const products = await prisma.product.findMany()
 

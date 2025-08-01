@@ -63,7 +63,7 @@ interface UsersTableProps {
 }
 
 export const UsersTable: React.FC<UsersTableProps> = ({ data }) => {
-   const router = useRouter()
+   const _router = useRouter()
 
    return <DataTable searchKey="name" columns={columns} data={data} />
 }

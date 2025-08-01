@@ -74,7 +74,7 @@ export const BannerForm: React.FC<BannerFormProps> = ({ initialData }) => {
          router.refresh()
          router.push(`/banners`)
          toast.success(toastMessage)
-      } catch (error: any) {
+      } catch (_error: any) {
          toast.error('Something went wrong.')
       } finally {
          setLoading(false)
@@ -93,7 +93,7 @@ export const BannerForm: React.FC<BannerFormProps> = ({ initialData }) => {
          router.refresh()
          router.push(`/banners`)
          toast.success('Banner deleted.')
-      } catch (error: any) {
+      } catch (_error: any) {
          toast.error(
             'Make sure you removed all categories using this banner first.'
          )

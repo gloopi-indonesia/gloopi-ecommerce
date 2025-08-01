@@ -4,7 +4,7 @@ import {
    AccordionItem,
    AccordionTrigger,
 } from '@/components/ui/accordion'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Heading } from '@/components/ui/heading'
 import prisma from '@/lib/prisma'
 import { format } from 'date-fns'

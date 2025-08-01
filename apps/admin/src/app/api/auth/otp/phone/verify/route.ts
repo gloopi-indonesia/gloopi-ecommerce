@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
 
       const { email: emailRaw, phone: phoneRaw, OTP } = await req.json()
       const email = emailRaw.toString().toLowerCase()
-      const phone = phoneRaw?.toString().toLowerCase()
+      const _phone = phoneRaw?.toString().toLowerCase()
 
       if (!process.env.JWT_SECRET_KEY) {
          console.error('JWT secret key is missing')

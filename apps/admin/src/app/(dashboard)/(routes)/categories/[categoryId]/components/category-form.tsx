@@ -83,7 +83,7 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({
          router.refresh()
          router.push(`/categories`)
          toast.success(toastMessage)
-      } catch (error: any) {
+      } catch (_error: any) {
          toast.error('Something went wrong.')
       } finally {
          setLoading(false)
@@ -102,7 +102,7 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({
          router.refresh()
          router.push(`/categories`)
          toast.success('Category deleted.')
-      } catch (error: any) {
+      } catch (_error: any) {
          toast.error(
             'Make sure you removed all products using this category first.'
          )

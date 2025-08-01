@@ -12,7 +12,7 @@ interface ProductsTableProps {
 }
 
 export const ProductsTable: React.FC<ProductsTableProps> = ({ data }) => {
-   const router = useRouter()
+   const _router = useRouter()
 
    return <DataTable searchKey="title" columns={columns} data={data} />
 }

@@ -1,7 +1,7 @@
 import {
    Body,
    Button,
-   Column,
+   
    Container,
    Head,
    Heading,
@@ -10,7 +10,7 @@ import {
    Img,
    Link,
    Preview,
-   Row,
+   
    Section,
    Tailwind,
    Text,

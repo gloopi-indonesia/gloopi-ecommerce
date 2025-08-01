@@ -134,9 +134,9 @@ function calculateCosts({ cart }) {
    let total = 0,
       discount = 0
 
-   for (const item of cart?.items) {
-      total += item?.count * item?.product?.price
-      discount += item?.count * item?.product?.discount
+   for (const item of cart.items || []) {
+      total += (item?.count || 0) * (item?.product?.price || 0)
+      discount += (item?.count || 0) * (item?.product?.discount || 0)
    }
 
    const afterDiscount = total - discount

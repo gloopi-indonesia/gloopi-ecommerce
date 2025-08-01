@@ -83,7 +83,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({ initialData }) => {
          router.refresh()
          router.push(`/products`)
          toast.success(toastMessage)
-      } catch (error: any) {
+      } catch (_error: any) {
          toast.error('Something went wrong.')
       } finally {
          setLoading(false)

@@ -5,7 +5,7 @@ import { DataTable } from '@/components/ui/data-table'
 import { ColumnDef } from '@tanstack/react-table'
 import { EditIcon } from 'lucide-react'
 import Link from 'next/link'
-import { useParams, useRouter } from 'next/navigation'
+import { } from 'next/navigation'
 
 export type BrandColumn = {
    id: string
@@ -39,8 +39,5 @@ interface BrandsClientProps {
 }
 
 export const BrandsClient: React.FC<BrandsClientProps> = ({ data }) => {
-   const params = useParams()
-   const router = useRouter()
-
    return <DataTable searchKey="title" columns={columns} data={data} />
 }

@@ -17,9 +17,9 @@ export function Receipt() {
          discountAmount = 0
 
       if (isVariableValid(cart?.items)) {
-         for (const item of cart?.items) {
-            totalAmount += item?.count * item?.product?.price
-            discountAmount += item?.count * item?.product?.discount
+         for (const item of cart.items) {
+            totalAmount += (item?.count || 0) * (item?.product?.price || 0)
+            discountAmount += (item?.count || 0) * (item?.product?.discount || 0)
          }
       }
 

@@ -110,7 +110,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
          router.refresh()
          router.push(`/products`)
          toast.success(toastMessage)
-      } catch (error: any) {
+      } catch (_error: any) {
          toast.error('Something went wrong.')
       } finally {
          setLoading(false)
@@ -129,7 +129,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
          router.refresh()
          router.push(`/products`)
          toast.success('Product deleted.')
-      } catch (error: any) {
+      } catch (_error: any) {
          toast.error('Something went wrong.')
       } finally {
          setLoading(false)

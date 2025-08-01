@@ -1,6 +1,5 @@
 import { Heading } from '@/components/ui/heading'
 import { Separator } from '@/components/ui/separator'
-import prisma from '@/lib/prisma'
 
 export default async function PaymentPage() {
 

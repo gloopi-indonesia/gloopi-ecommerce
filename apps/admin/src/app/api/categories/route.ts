@@ -41,7 +41,7 @@ export async function POST(req: Request) {
    }
 }
 
-export async function GET(req: Request) {
+export async function GET(_req: Request) {
    try {
       // Find all categories
       const categories = await prisma.category.findMany()
