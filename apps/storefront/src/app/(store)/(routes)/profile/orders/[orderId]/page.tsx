@@ -3,9 +3,6 @@
 import {
    Card,
    CardContent,
-   CardFooter,
-   CardHeader,
-   CardTitle,
 } from '@/components/ui/card'
 import { Loader } from '@/components/ui/loader'
 import { useAuthenticated } from '@/hooks/useAuthentication'

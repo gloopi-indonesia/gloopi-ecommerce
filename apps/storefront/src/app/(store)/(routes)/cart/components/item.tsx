@@ -6,25 +6,22 @@ import { Button } from '@/components/ui/button'
 import {
    Card,
    CardContent,
-   CardDescription,
-   CardFooter,
    CardHeader,
-   CardTitle,
 } from '@/components/ui/card'
 import { useAuthenticated } from '@/hooks/useAuthentication'
-import { getCountInCart, getLocalCart, writeLocalCart } from '@/lib/cart'
+import { getCountInCart, getLocalCart } from '@/lib/cart'
 import { useCartContext } from '@/state/Cart'
 import { MinusIcon, PlusIcon, X } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 export const Item = ({ cartItem }) => {
    const { authenticated } = useAuthenticated()
-   const { loading, cart, refreshCart, dispatchCart } = useCartContext()
+   const { cart, dispatchCart } = useCartContext()
    const [fetchingCart, setFetchingCart] = useState(false)
 
-   const { product, productId, count } = cartItem
+   const { product, productId } = cartItem
 
    function findLocalCartIndexById(array, productId) {
       for (let i = 0; i < array.length; i++) {

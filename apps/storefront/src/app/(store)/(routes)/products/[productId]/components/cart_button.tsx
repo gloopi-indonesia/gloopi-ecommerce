@@ -18,7 +18,7 @@ export default function CartButton({ product }) {
 
 export function ButtonComponent({ product }) {
    const { authenticated } = useAuthenticated()
-   const { loading, cart, refreshCart, dispatchCart } = useCartContext()
+   const { cart, dispatchCart } = useCartContext()
 
    const [fetchingCart, setFetchingCart] = useState(false)
 

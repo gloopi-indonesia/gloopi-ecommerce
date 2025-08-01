@@ -46,16 +46,16 @@ export const OrderForm: React.FC<ProductFormProps> = ({ initialData }) => {
 
    const defaultValues = initialData
       ? {
-           ...initialData,
-        }
+         ...initialData,
+      }
       : {
-           status: '---',
-           shipping: 0,
-           payable: 0,
-           discount: 0,
-           isPaid: false,
-           isCompleted: false,
-        }
+         status: '---',
+         shipping: 0,
+         payable: 0,
+         discount: 0,
+         isPaid: false,
+         isCompleted: false,
+      }
 
    const form = useForm<ProductFormValues>({
       resolver: zodResolver(formSchema),
@@ -83,7 +83,7 @@ export const OrderForm: React.FC<ProductFormProps> = ({ initialData }) => {
          router.refresh()
          router.push(`/products`)
          toast.success(toastMessage)
-      } catch (error: any) {
+      } catch (_error: any) {
          toast.error('Something went wrong.')
       } finally {
          setLoading(false)

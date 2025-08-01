@@ -13,8 +13,8 @@ type Props = {
 }
 
 export async function generateMetadata(
-   { params, searchParams }: Props,
-   parent: ResolvingMetadata
+   { params }: Props,
+   _parent: ResolvingMetadata
 ): Promise<Metadata> {
    const product = await prisma.product.findUnique({
       where: {

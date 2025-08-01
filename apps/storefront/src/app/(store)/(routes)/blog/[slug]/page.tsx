@@ -1,7 +1,6 @@
 import MDXComponents from '@/components/native/mdx/MDXComponents'
 import { Separator } from '@/components/native/separator'
 import prisma from '@/lib/prisma'
-import { format, parseISO } from 'date-fns'
 import { MDXRemote } from 'next-mdx-remote'
 import { serialize } from 'next-mdx-remote/serialize'
 import Image from 'next/image'
@@ -31,7 +30,7 @@ export default async function Blog({ params }: { params: { slug: string } }) {
 }
 
 function Content({ blog, mdx }) {
-   const { title, updatedAt } = blog
+   const { title } = blog
 
    return (
       <div className="rounded-lg bg-white p-6 text-justify text-neutral-900 dark:bg-neutral-800 dark:text-neutral-200 md:col-span-3">
@@ -49,7 +48,7 @@ function Recomendations({ recommendations }) {
    return (
       <div className="col-span-1">
          {recommendations.map((rec) => {
-            const { slug, author, createdAt, updatedAt, title, image } = rec
+            const { slug, author, title, image } = rec
 
             return (
                <div key={rec} className="mb-4 w-full">

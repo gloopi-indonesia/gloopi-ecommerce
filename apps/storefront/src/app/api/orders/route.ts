@@ -85,7 +85,7 @@ export async function POST(req: Request) {
                connect: { id: addressId },
             },
             orderItems: {
-               create: cart?.items.map((orderItem) => ({
+               create: cart.items.map((orderItem) => ({
                   count: orderItem.count,
                   price: orderItem.product.price,
                   discount: orderItem.product.discount,
@@ -101,7 +101,7 @@ export async function POST(req: Request) {
 
       const owners = await prisma.owner.findMany()
 
-      const notifications = await prisma.notification.createMany({
+      const _notifications = await prisma.notification.createMany({
          data: owners.map((owner) => ({
             userId: owner.id,
             content: `Order #${order.number} was created was created with a value of $${payable}.`,

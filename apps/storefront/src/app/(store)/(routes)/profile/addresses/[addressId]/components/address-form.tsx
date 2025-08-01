@@ -71,7 +71,7 @@ export const AddressForm: React.FC<AddressFormProps> = ({ initialData }) => {
          router.refresh()
          router.push(`/profile/addresses`)
          toast.success(toastMessage)
-      } catch (error: any) {
+      } catch (_error: any) {
          toast.error('Something went wrong.')
       } finally {
          setLoading(false)
@@ -90,7 +90,7 @@ export const AddressForm: React.FC<AddressFormProps> = ({ initialData }) => {
          router.refresh()
          router.push(`/addresses`)
          toast.success('Address deleted.')
-      } catch (error: any) {
+      } catch (_error: any) {
          toast.error(
             'Make sure you removed all categories using this address first.'
          )

@@ -1,9 +1,8 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Loader } from '@/components/ui/loader'
 import { useAuthenticated } from '@/hooks/useAuthentication'
-import { format } from 'date-fns'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 

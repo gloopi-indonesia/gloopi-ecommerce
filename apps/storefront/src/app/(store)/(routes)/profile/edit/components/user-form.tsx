@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button'
 import {
    Form,
    FormControl,
-   FormDescription,
    FormField,
    FormItem,
    FormLabel,
@@ -42,13 +41,13 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData }) => {
 
    const defaultValues = initialData
       ? {
-           ...initialData,
-        }
+         ...initialData,
+      }
       : {
-           name: '---',
-           phone: '---',
-           email: '---',
-        }
+         name: '---',
+         phone: '---',
+         email: '---',
+      }
 
    const form = useForm<UserFormValues>({
       resolver: zodResolver(formSchema),
@@ -76,7 +75,7 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData }) => {
          router.refresh()
          router.push(`/products`)
          toast.success(toastMessage)
-      } catch (error: any) {
+      } catch (_error: any) {
          toast.error('Something went wrong.')
       } finally {
          setLoading(false)

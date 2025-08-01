@@ -9,7 +9,7 @@ import { Receipt } from './receipt'
 import { Skeleton } from './skeleton'
 
 export const CartGrid = () => {
-   const { loading, cart, refreshCart, dispatchCart } = useCartContext()
+   const { cart } = useCartContext()
 
    if (isVariableValid(cart?.items) && cart?.items?.length === 0) {
       return (
@@ -31,11 +31,11 @@ export const CartGrid = () => {
          <div className="md:col-span-2">
             {isVariableValid(cart?.items)
                ? cart?.items?.map((cartItem, index) => (
-                    <Item cartItem={cartItem} key={index} />
-                 ))
+                  <Item cartItem={cartItem} key={index} />
+               ))
                : [...Array(5)].map((cartItem, index) => (
-                    <Skeleton key={index} />
-                 ))}
+                  <Skeleton key={index} />
+               ))}
          </div>
          <Receipt />
       </div>

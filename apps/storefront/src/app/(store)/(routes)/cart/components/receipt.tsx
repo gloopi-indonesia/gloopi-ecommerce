@@ -10,7 +10,7 @@ import Link from 'next/link'
 
 export function Receipt() {
    const { authenticated } = useAuthenticated()
-   const { loading, cart, refreshCart, dispatchCart } = useCartContext()
+   const { loading, cart } = useCartContext()
 
    function calculatePayableCost() {
       let totalAmount = 0,
@@ -70,7 +70,7 @@ export function Receipt() {
             >
                <Button
                   disabled={
-                     !isVariableValid(cart?.items) || cart['items'].length === 0
+                     !isVariableValid(cart?.items) || cart?.items?.length === 0
                   }
                   className="w-full"
                >
