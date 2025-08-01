@@ -3,7 +3,15 @@ import { getErrorResponse } from '@/lib/utils'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function middleware(req: NextRequest) {
-   if (req.nextUrl.pathname.startsWith('/api/auth')) return NextResponse.next()
+   // Skip authentication for auth routes
+   if (req.nextUrl.pathname.startsWith('/api/auth')) {
+      return NextResponse.next()
+   }
+
+   // Skip authentication for login page
+   if (req.nextUrl.pathname === '/login') {
+      return NextResponse.next()
+   }
 
    function isTargetingAPI() {
       return req.nextUrl.pathname.startsWith('/api')
@@ -29,7 +37,9 @@ export async function middleware(req: NextRequest) {
    const token = getToken()
 
    if (!token) {
-      if (isTargetingAPI()) return getErrorResponse(401, 'INVALID TOKEN')
+      if (isTargetingAPI()) {
+         return getErrorResponse(401, 'Token tidak ditemukan')
+      }
 
       return NextResponse.redirect(new URL('/login', req.url))
    }
@@ -40,11 +50,13 @@ export async function middleware(req: NextRequest) {
       const { sub } = await verifyJWT<{ sub: string }>(token)
       response.headers.set('X-USER-ID', sub)
    } catch (error) {
+      console.error('JWT verification failed:', error)
+      
       if (isTargetingAPI()) {
-         return getErrorResponse(401, 'UNAUTHORIZED')
+         return getErrorResponse(401, 'Token tidak valid')
       }
 
-      const redirect = NextResponse.redirect(new URL(`/login`, req.url))
+      const redirect = NextResponse.redirect(new URL('/login', req.url))
       redirect.cookies.delete('token')
       redirect.cookies.delete('logged-in')
       return redirect

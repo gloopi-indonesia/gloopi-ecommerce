@@ -1,42 +1,81 @@
 import prisma from '@/lib/prisma'
-import { NextResponse } from 'next/server'
+import { getErrorResponse } from '@/lib/utils'
+import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 
-export async function GET(req: Request) {
-   try {
-      const userId = req.headers.get('X-USER-ID')
+const updateProfileSchema = z.object({
+  name: z.string().min(2, 'Nama minimal 2 karakter').optional(),
+  phone: z.string().min(10, 'Nomor telepon tidak valid').optional(),
+  taxInformation: z.any().optional(),
+  communicationPreferences: z.any().optional(),
+})
 
-      if (!userId) {
-         return new NextResponse('Unauthorized', { status: 401 })
+export async function PUT(req: NextRequest) {
+  try {
+    const userId = req.headers.get('X-USER-ID')
+    
+    if (!userId) {
+      return getErrorResponse(401, 'Unauthorized')
+    }
+
+    const body = await req.json()
+    const data = updateProfileSchema.parse(body)
+
+    // Check if phone number is already taken by another customer
+    if (data.phone) {
+      const existingCustomer = await prisma.customer.findFirst({
+        where: {
+          phone: data.phone,
+          id: { not: userId },
+        },
+      })
+
+      if (existingCustomer) {
+        return getErrorResponse(409, 'Nomor telepon sudah digunakan')
       }
+    }
 
-      const user = await prisma.user.findUniqueOrThrow({
-         where: { id: userId, isEmailVerified: true },
-         include: {
-            cart: {
-               include: {
-                  items: {
-                     include: {
-                        product: true,
-                     },
-                  },
-               },
-            },
-            addresses: true,
-            wishlist: true,
-         },
-      })
+    // Update customer profile
+    const updatedCustomer = await prisma.customer.update({
+      where: { id: userId },
+      data: {
+        ...(data.name && { name: data.name }),
+        ...(data.phone && { phone: data.phone }),
+        ...(data.taxInformation && { taxInformation: data.taxInformation }),
+        ...(data.communicationPreferences && { communicationPreferences: data.communicationPreferences }),
+      },
+      include: {
+        company: true,
+        addresses: {
+          orderBy: { isDefault: 'desc' },
+        },
+      },
+    })
 
-      return NextResponse.json({
-         phone: user.phone,
-         email: user.email,
-         name: user.name,
-         birthday: user.birthday,
-         addresses: user.addresses,
-         wishlist: user.wishlist,
-         cart: user.cart,
-      })
-   } catch (error) {
-      console.error('[PROFILE_GET]', error)
-      return new NextResponse('Internal error', { status: 500 })
-   }
+    return NextResponse.json({
+      success: true,
+      message: 'Profil berhasil diperbarui',
+      customer: {
+        id: updatedCustomer.id,
+        email: updatedCustomer.email,
+        name: updatedCustomer.name,
+        phone: updatedCustomer.phone,
+        type: updatedCustomer.type,
+        isEmailVerified: updatedCustomer.isEmailVerified,
+        isPhoneVerified: updatedCustomer.isPhoneVerified,
+        taxInformation: updatedCustomer.taxInformation,
+        communicationPreferences: updatedCustomer.communicationPreferences,
+        company: updatedCustomer.company,
+        addresses: updatedCustomer.addresses,
+      },
+    })
+  } catch (error) {
+    console.error('Update profile error:', error)
+    
+    if (error instanceof z.ZodError) {
+      return getErrorResponse(400, error.errors[0].message)
+    }
+
+    return getErrorResponse(500, 'Terjadi kesalahan server')
+  }
 }
