@@ -14,20 +14,20 @@ import { OrderTable } from '../../orders/components/table'
 import { UserForm } from './components/user-form'
 
 const UserPage = async ({ params }: { params: { userId: string } }) => {
-   const user = await prisma.user.findUnique({
+   const user = await prisma.customer.findUnique({
       where: {
          id: params.userId,
       },
       include: {
          addresses: true,
-         payments: true,
          orders: {
             include: {
-               orderItems: {
+               items: {
                   include: {
                      product: true,
                   },
                },
+               invoice: true, // Include invoice to check payment status
             },
          },
       },
@@ -36,12 +36,12 @@ const UserPage = async ({ params }: { params: { userId: string } }) => {
    function OrdersCard() {
       const { orders } = user
 
-      const formattedOrders: OrderColumn[] = orders.map((order) => ({
+      const formattedOrders: any[] = orders.map((order) => ({
          id: order.id,
-         number: `Order #${order.number}`,
+         number: `Order #${order.orderNumber}`, // Use orderNumber
          date: order.createdAt.toUTCString(),
-         payable: '$' + order.payable.toString(),
-         isPaid: order.isPaid,
+         payable: '$' + (order.totalAmount / 100).toString(), // Convert from cents and use totalAmount
+         isPaid: order.invoice?.status === 'PAID', // Check invoice status
          createdAt: format(order.createdAt, 'MMMM do, yyyy'),
       }))
 

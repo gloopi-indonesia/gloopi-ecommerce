@@ -70,11 +70,7 @@ export async function PATCH(
 
       const body = await req.json()
 
-      const { title, description, bannerId } = body
-
-      if (!bannerId) {
-         return new NextResponse('Banner ID is required', { status: 400 })
-      }
+      const { title, description } = body
 
       if (!title) {
          return new NextResponse('Name is required', { status: 400 })
@@ -89,13 +85,8 @@ export async function PATCH(
             id: params.categoryId,
          },
          data: {
-            title,
+            name: title,
             description,
-            banners: {
-               connect: {
-                  id: bannerId,
-               },
-            },
          },
       })
 

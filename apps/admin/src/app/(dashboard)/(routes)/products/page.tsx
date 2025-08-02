@@ -3,6 +3,7 @@ import { Heading } from '@/components/ui/heading'
 import { Separator } from '@/components/ui/separator'
 import prisma from '@/lib/prisma'
 import { formatter } from '@/lib/utils'
+import { format } from 'date-fns'
 import { Plus } from 'lucide-react'
 import Link from 'next/link'
 
@@ -12,7 +13,7 @@ import { ProductColumn } from './components/table'
 export default async function ProductsPage() {
    const products = await prisma.product.findMany({
       include: {
-         orders: true,
+         orderItems: true,
          categories: true,
          brand: true,
       },
@@ -23,12 +24,14 @@ export default async function ProductsPage() {
 
    const formattedProducts: ProductColumn[] = products.map((product) => ({
       id: product.id,
-      title: product.title,
-      price: formatter.format(product.price),
-      discount: formatter.format(product.discount),
-      category: product.categories[0].title,
-      sales: product.orders.length,
-      isAvailable: product.isAvailable,
+      title: product.name, // Map name to title
+      price: formatter.format(product.basePrice / 100), // Convert from cents to IDR
+      discount: formatter.format(0), // No discount field in schema
+      category: product.categories[0]?.categoryId || 'N/A', // CategoryId since we don't have full category object
+      sales: product.orderItems.length, // Use orderItems instead of orders
+      isAvailable: product.isActive, // Map isActive to isAvailable
+      stock: product.stock,
+      createdAt: format(product.createdAt, 'MMMM do, yyyy'),
    }))
 
    return (

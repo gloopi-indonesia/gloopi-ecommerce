@@ -8,10 +8,12 @@ interface GraphData {
 export const getGraphRevenue = async (): Promise<GraphData[]> => {
    const paidOrders = await prisma.order.findMany({
       where: {
-         isPaid: true,
+         invoice: {
+            status: 'PAID',
+         },
       },
       include: {
-         orderItems: {
+         items: {
             include: {
                product: { include: { categories: true } },
             },
@@ -26,7 +28,7 @@ export const getGraphRevenue = async (): Promise<GraphData[]> => {
       const month = order.createdAt.getMonth() // 0 for Jan, 1 for Feb, ...
 
       // Adding the revenue for this order to the respective month
-      monthlyRevenue[month] = (monthlyRevenue[month] || 0) + order.payable
+      monthlyRevenue[month] = (monthlyRevenue[month] || 0) + order.totalAmount
    }
 
    // Converting the grouped data into the format expected by the graph

@@ -5,17 +5,19 @@ import { PaymentClient } from './components/client'
 import type { PaymentColumn } from './components/columns'
 
 export default async function PaymentsPage() {
-   const payments = await prisma.payment.findMany({
-      where: {},
-      include: {
-         provider: true,
-         user: true,
-         order: true,
-      },
-      orderBy: {
-         updatedAt: 'desc',
-      },
-   })
+   // TODO: Payment model doesn't exist in schema, using empty array for now
+   const payments: any[] = []
+   // const payments = await prisma.payment.findMany({
+   //    where: {},
+   //    include: {
+   //       provider: true,
+   //       user: true,
+   //       order: true,
+   //    },
+   //    orderBy: {
+   //       updatedAt: 'desc',
+   //    },
+   // })
 
    const formattedPayments: PaymentColumn[] = payments.map((payment) => ({
       id: payment.id,

@@ -37,14 +37,14 @@ export async function GET(request: NextRequest) {
     }
 
     const payload = await verifyJWT(token);
-    if (!payload || !payload.userId) {
+    if (!payload || !(payload as any).sub) {
       return NextResponse.json(
         { error: 'Invalid authentication token' },
         { status: 401 }
       );
     }
 
-    const adminUserId = payload.userId as string;
+    const adminUserId = (payload as any).sub as string;
     const searchParams = request.nextUrl.searchParams;
     const type = searchParams.get('type');
     const includeAllAdmins = searchParams.get('includeAllAdmins') === 'true';
@@ -95,22 +95,35 @@ export async function POST(request: NextRequest) {
     }
 
     const payload = await verifyJWT(token);
-    if (!payload || !payload.userId) {
+    if (!payload || !(payload as any).sub) {
       return NextResponse.json(
         { error: 'Invalid authentication token' },
         { status: 401 }
       );
     }
 
-    const adminUserId = payload.userId as string;
+    const adminUserId = (payload as any).sub as string;
 
     // Validate request body
     const body = await request.json();
     const validatedData = createFollowUpSchema.parse(body);
 
+    // Ensure required fields are present
+    if (!validatedData.customerId || !validatedData.type || !validatedData.scheduledAt) {
+      return NextResponse.json(
+        { error: 'Missing required fields: customerId, type, and scheduledAt are required' },
+        { status: 400 }
+      );
+    }
+
     // Create follow-up
     const followUp = await communicationManager.scheduleFollowUp({
-      ...validatedData,
+      customerId: validatedData.customerId,
+      quotationId: validatedData.quotationId,
+      orderId: validatedData.orderId,
+      type: validatedData.type,
+      scheduledAt: validatedData.scheduledAt,
+      notes: validatedData.notes,
       adminUserId,
     });
 
@@ -125,7 +138,7 @@ export async function POST(request: NextRequest) {
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { 
+        {
           error: 'Validation error',
           details: error.errors
         },

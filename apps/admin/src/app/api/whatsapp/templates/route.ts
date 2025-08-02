@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     }
 
     const payload = await verifyJWT(token);
-    if (!payload || !payload.userId) {
+    if (!payload || !(payload as any).sub) {
       return NextResponse.json(
         { error: 'Invalid authentication token' },
         { status: 401 }

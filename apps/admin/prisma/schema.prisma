@@ -16,6 +16,7 @@ model AdminUser {
   password String
   role     AdminRole @default(ADMIN)
   isActive Boolean @default(true)
+  OTP      String? // For email verification and 2FA
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -666,4 +667,18 @@ model SystemConfig {
   updatedAt DateTime @updatedAt
 
   @@map("system_config")
+}
+
+// Banner model for promotional banners
+model Banner {
+  id       String @id @default(cuid())
+  label    String
+  imageUrl String?
+  
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("banners")
 }

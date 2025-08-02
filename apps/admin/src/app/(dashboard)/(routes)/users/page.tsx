@@ -6,7 +6,7 @@ import { UsersTable } from './components/table'
 import { UserColumn } from './components/table'
 
 export default async function UsersPage() {
-   const users = await prisma.user.findMany({
+   const users = await prisma.customer.findMany({
       include: {
          orders: true,
       },
@@ -18,9 +18,9 @@ export default async function UsersPage() {
 
    const formattedUsers: UserColumn[] = users.map((user) => ({
       id: user.id,
-      name: user.name,
+      name: user.name || '',
       email: user.email,
-      phone: user.phone,
+      phone: user.phone || '',
       orders: user.orders.length,
    }))
 

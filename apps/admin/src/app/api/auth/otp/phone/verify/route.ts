@@ -17,8 +17,8 @@ export async function POST(req: NextRequest) {
          return getErrorResponse(500, 'Internal Server Error')
       }
 
-      const user = await prisma.owner.findFirstOrThrow({
-         where: { email, OTP },
+      const user = await prisma.adminUser.findFirstOrThrow({
+         where: { email, OTP } as any,
       })
 
       const token = await signJWT(

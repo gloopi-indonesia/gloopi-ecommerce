@@ -16,7 +16,7 @@ export default async function CategoriesPage() {
 
    const formattedCategories: CategoryColumn[] = categories.map((category) => ({
       id: category.id,
-      title: category.title,
+      title: category.name,
       products: category.products.length,
    }))
 

@@ -16,17 +16,17 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const payload = await verifyJWT(token);
-    if (!payload || !payload.userId) {
+    const payload = await verifyJWT(token) as any;
+    if (!payload || !payload.sub) {
       return NextResponse.json(
         { error: 'Invalid authentication token' },
         { status: 401 }
       );
     }
 
-    const adminUserId = payload.userId as string;
+    const adminUserId = payload.sub as string;
     const searchParams = request.nextUrl.searchParams;
-    
+
     // Parse date filters
     const startDateParam = searchParams.get('startDate');
     const endDateParam = searchParams.get('endDate');

@@ -25,7 +25,7 @@ export async function PATCH(
     }
 
     const payload = await verifyJWT(token);
-    if (!payload || !payload.userId) {
+    if (!payload || !(payload as any).sub) {
       return NextResponse.json(
         { error: 'Invalid authentication token' },
         { status: 401 }
@@ -59,7 +59,7 @@ export async function PATCH(
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { 
+        {
           error: 'Validation error',
           details: error.errors
         },

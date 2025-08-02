@@ -16,7 +16,7 @@ export default async function BrandsPage() {
 
    const formattedBrands: BrandColumn[] = brands.map((brand) => ({
       id: brand.id,
-      title: brand.title,
+      title: brand.name,
       products: brand.products.length,
    }))
 

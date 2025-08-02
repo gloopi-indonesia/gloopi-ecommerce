@@ -16,15 +16,17 @@ export async function POST(req: NextRequest) {
       const { email } = await req.json()
 
       if (isEmailValid(email)) {
-         await prisma.owner.upsert({
+         await prisma.adminUser.upsert({
             where: { email: email.toString().toLowerCase() },
             update: {
                OTP,
-            },
+            } as any,
             create: {
                email: email.toString().toLowerCase(),
+               name: 'Admin User', // Default name for newly created admin users
+               password: 'temp_password', // This should be changed after OTP verification
                OTP,
-            },
+            } as any,
          })
 
          // Skip email sending in development if credentials are not configured

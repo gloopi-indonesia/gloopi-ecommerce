@@ -18,12 +18,12 @@ export type ProductWithIncludes = Prisma.ProductGetPayload<{
    }
 }>
 
-export type UserWithIncludes = Prisma.UserGetPayload<{
+export type CustomerWithIncludes = Prisma.CustomerGetPayload<{
    include: {
       addresses: true
       orders: {
          include: {
-            orderItems: {
+            items: {
                include: {
                   product: true
                }
@@ -35,21 +35,18 @@ export type UserWithIncludes = Prisma.UserGetPayload<{
 
 export type OrderWithIncludes = Prisma.OrderGetPayload<{
    include: {
-      address: true
-      discountCode: true
-      user: {
+      shippingAddress: true
+      customer: {
          include: {
             addresses: true
-            payments: true
             orders: true
          }
       }
-      payments: {
+      items: {
          include: {
-            provider: true
+            product: true
          }
       }
-      orderItems: { include: { product: true } }
-      refund: true
+      invoice: true
    }
 }>

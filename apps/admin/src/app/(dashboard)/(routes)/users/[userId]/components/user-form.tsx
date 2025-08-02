@@ -12,7 +12,7 @@ import {
    FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import type { UserWithIncludes } from '@/types/prisma'
+import type { CustomerWithIncludes } from '@/types/prisma'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useParams, useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -30,7 +30,7 @@ const formSchema = z.object({
 type UserFormValues = z.infer<typeof formSchema>
 
 interface UserFormProps {
-   initialData: UserWithIncludes | null
+   initialData: CustomerWithIncludes | null
 }
 
 export const UserForm: React.FC<UserFormProps> = ({ initialData }) => {
@@ -44,14 +44,14 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData }) => {
 
    const defaultValues = initialData
       ? {
-           ...initialData,
-        }
+         ...initialData,
+      }
       : {
-           name: '---',
-           phone: '---',
-           email: '---',
-           isBanned: false,
-        }
+         name: '---',
+         phone: '---',
+         email: '---',
+         isBanned: false,
+      }
 
    const form = useForm<UserFormValues>({
       resolver: zodResolver(formSchema),

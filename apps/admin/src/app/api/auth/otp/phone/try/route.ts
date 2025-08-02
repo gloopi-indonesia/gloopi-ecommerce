@@ -18,17 +18,17 @@ export async function POST(req: NextRequest) {
 
       // Use isPhoneNumberValid if international
       if (isIranianPhoneNumberValid(phone)) {
-         await prisma.owner.upsert({
+         await prisma.adminUser.upsert({
             where: { email: email.toString().toLowerCase() },
             update: {
-               phone: phone.toString().toLowerCase(),
                OTP,
-            },
+            } as any,
             create: {
                email: email.toString().toLowerCase(),
-               phone: phone.toString().toLowerCase(),
+               name: 'Admin User', // Default name for newly created admin users
+               password: 'temp_password', // This should be changed after OTP verification
                OTP,
-            },
+            } as any,
          })
 
          await sendTransactionalSMS({

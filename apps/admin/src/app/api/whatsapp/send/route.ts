@@ -28,14 +28,14 @@ export async function POST(request: NextRequest) {
     }
 
     const payload = await verifyJWT(token);
-    if (!payload || !payload.userId) {
+    if (!payload || !(payload as any).sub) {
       return NextResponse.json(
         { error: 'Invalid authentication token' },
         { status: 401 }
       );
     }
 
-    const adminUserId = payload.userId as string;
+    const adminUserId = (payload as any).sub as string;
 
     // Validate request body
     const body = await request.json();
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { 
+        {
           error: 'Validation error',
           details: error.errors
         },
@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { 
+      {
         error: error instanceof Error ? error.message : 'Failed to send WhatsApp message'
       },
       { status: 500 }

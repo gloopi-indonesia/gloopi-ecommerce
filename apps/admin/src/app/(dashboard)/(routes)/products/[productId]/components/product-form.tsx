@@ -68,21 +68,26 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
    const defaultValues = initialData
       ? {
-           ...initialData,
-           price: parseFloat(String(initialData?.price.toFixed(2))),
-           discount: parseFloat(String(initialData?.discount.toFixed(2))),
-        }
+         title: initialData.name, // Map name to title
+         images: initialData.images,
+         price: parseFloat(String((initialData.basePrice / 100).toFixed(2))), // Convert from cents to IDR
+         discount: 0, // Default discount since it's not in schema
+         stock: initialData.stock,
+         categoryId: initialData.categories[0]?.categoryId || '---', // Get first category ID
+         isFeatured: initialData.isFeatured,
+         isAvailable: initialData.isActive, // Map isActive to isAvailable
+      }
       : {
-           title: '---',
-           description: '---',
-           images: [],
-           price: 0,
-           discount: 0,
-           stock: 0,
-           categoryId: '---',
-           isFeatured: false,
-           isAvailable: false,
-        }
+         title: '---',
+         description: '---',
+         images: [],
+         price: 0,
+         discount: 0,
+         stock: 0,
+         categoryId: '---',
+         isFeatured: false,
+         isAvailable: false,
+      }
 
    const form = useForm<ProductFormValues>({
       resolver: zodResolver(formSchema),
@@ -288,7 +293,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                                        key={category.id}
                                        value={category.id}
                                     >
-                                       {category.title}
+                                       {category.name}
                                     </SelectItem>
                                  ))}
                               </SelectContent>

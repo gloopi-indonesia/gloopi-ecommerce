@@ -14,6 +14,19 @@ const createCommunicationSchema = z.object({
   externalId: z.string().optional(),
 });
 
+// Ensure required fields are present for database operations
+function validateCommunicationData(data: any): data is {
+  customerId: string;
+  quotationId?: string;
+  orderId?: string;
+  type: CommunicationType;
+  direction: CommunicationDirection;
+  content: string;
+  externalId?: string;
+} {
+  return typeof data.customerId === 'string' && data.customerId.length > 0;
+}
+
 /**
  * GET handler for retrieving communications
  */
@@ -29,7 +42,7 @@ export async function GET(request: NextRequest) {
     }
 
     const payload = await verifyJWT(token);
-    if (!payload || !payload.userId) {
+    if (!payload || !(payload as any).sub) {
       return NextResponse.json(
         { error: 'Invalid authentication token' },
         { status: 401 }
@@ -93,22 +106,36 @@ export async function POST(request: NextRequest) {
     }
 
     const payload = await verifyJWT(token);
-    if (!payload || !payload.userId) {
+    if (!payload || !(payload as any).sub) {
       return NextResponse.json(
         { error: 'Invalid authentication token' },
         { status: 401 }
       );
     }
 
-    const adminUserId = payload.userId as string;
+    const adminUserId = (payload as any).sub as string;
 
     // Validate request body
     const body = await request.json();
     const validatedData = createCommunicationSchema.parse(body);
 
-    // Create communication
+    // Ensure all required fields are present
+    if (!validateCommunicationData(validatedData)) {
+      return NextResponse.json(
+        { error: 'Customer ID is required' },
+        { status: 400 }
+      );
+    }
+
+    // Create communication with guaranteed required fields
     const communication = await communicationManager.logCommunication({
-      ...validatedData,
+      customerId: validatedData.customerId,
+      quotationId: validatedData.quotationId,
+      orderId: validatedData.orderId,
+      type: validatedData.type,
+      direction: validatedData.direction,
+      content: validatedData.content,
+      externalId: validatedData.externalId,
       adminUserId,
     });
 
@@ -123,7 +150,7 @@ export async function POST(request: NextRequest) {
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { 
+        {
           error: 'Validation error',
           details: error.errors
         },
