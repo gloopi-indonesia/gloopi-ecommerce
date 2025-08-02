@@ -13,6 +13,18 @@ export const formatter = new Intl.NumberFormat('en-US', {
    maximumFractionDigits: 2,
 })
 
+// Indonesian Rupiah formatter
+export const idrFormatter = new Intl.NumberFormat('id-ID', {
+   style: 'currency',
+   currency: 'IDR',
+   maximumFractionDigits: 0,
+})
+
+// Format IDR from cents (stored as integers)
+export const formatIDRFromCents = (cents: number): string => {
+   return idrFormatter.format(cents / 100)
+}
+
 export function getErrorResponse(
    status: number = 500,
    message: string,

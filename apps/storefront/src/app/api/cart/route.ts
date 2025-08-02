@@ -1,101 +1,141 @@
+import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
-import { NextResponse } from 'next/server'
+import { verifyJWT } from '@/lib/jwt'
 
-export async function GET(req: Request) {
+export async function GET(request: NextRequest) {
    try {
-      const userId = req.headers.get('X-USER-ID')
+      const token = request.cookies.get('token')?.value
 
-      if (!userId) {
-         return new NextResponse('Unauthorized', { status: 401 })
+      if (!token) {
+         return NextResponse.json({ items: [] })
       }
 
-      const cart = await prisma.cart.findUniqueOrThrow({
-         where: { userId },
+      const payload = await verifyJWT(token) as any
+      if (!payload || typeof payload.sub !== 'string') {
+         return NextResponse.json({ items: [] })
+      }
+
+      const cartItems = await prisma.cartItem.findMany({
+         where: {
+            customerId: payload.sub,
+         },
          include: {
-            items: {
+            product: {
                include: {
-                  product: {
+                  brand: true,
+                  categories: {
                      include: {
-                        brand: true,
-                        categories: true,
+                        category: true,
                      },
                   },
+                  pricingTiers: true,
                },
             },
          },
       })
 
-      return NextResponse.json(cart)
+      return NextResponse.json({ items: cartItems })
    } catch (error) {
-      console.error('[GET_CART]', error)
-      return new NextResponse('Internal error', { status: 500 })
+      console.error('Error fetching cart:', error)
+      return NextResponse.json({ items: [] })
    }
 }
 
-export async function POST(req: Request) {
+export async function POST(request: NextRequest) {
    try {
-      const userId = req.headers.get('X-USER-ID')
+      const token = request.cookies.get('token')?.value
 
-      if (!userId) {
-         return new NextResponse('Unauthorized', { status: 401 })
+      if (!token) {
+         return NextResponse.json(
+            { error: 'Authentication required' },
+            { status: 401 }
+         )
       }
 
-      const { productId, count } = await req.json()
-
-      if (count < 1) {
-         await prisma.cartItem.delete({
-            where: { UniqueCartItem: { cartId: userId, productId } },
-         })
-      } else {
-         await prisma.cart.upsert({
-            where: {
-               userId,
-            },
-            create: {
-               user: {
-                  connect: {
-                     id: userId,
-                  },
-               },
-            },
-            update: {
-               items: {
-                  upsert: {
-                     where: {
-                        UniqueCartItem: {
-                           cartId: userId,
-                           productId,
-                        },
-                     },
-                     update: {
-                        count,
-                     },
-                     create: {
-                        productId,
-                        count,
-                     },
-                  },
-               },
-            },
-         })
+      const payload = await verifyJWT(token) as any
+      if (!payload || typeof payload.sub !== 'string') {
+         return NextResponse.json(
+            { error: 'Invalid token' },
+            { status: 401 }
+         )
       }
 
-      const cart = await prisma.cart.findUniqueOrThrow({
+      const { productId, quantity } = await request.json()
+
+      if (!productId || !quantity || quantity < 1) {
+         return NextResponse.json(
+            { error: 'Invalid product ID or quantity' },
+            { status: 400 }
+         )
+      }
+
+      // Check if product exists and is active
+      const product = await prisma.product.findFirst({
          where: {
-            userId,
+            id: productId,
+            isActive: true,
+         },
+      })
+
+      if (!product) {
+         return NextResponse.json(
+            { error: 'Product not found' },
+            { status: 404 }
+         )
+      }
+
+      // Check stock availability
+      if (product.stock < quantity) {
+         return NextResponse.json(
+            { error: 'Insufficient stock' },
+            { status: 400 }
+         )
+      }
+
+      // Upsert cart item
+      await prisma.cartItem.upsert({
+         where: {
+            UniqueCustomerProduct: {
+               customerId: payload.sub,
+               productId: productId,
+            },
+         },
+         update: {
+            quantity: quantity,
+         },
+         create: {
+            customerId: payload.sub,
+            productId: productId,
+            quantity: quantity,
+         },
+      })
+
+      // Return updated cart
+      const cartItems = await prisma.cartItem.findMany({
+         where: {
+            customerId: payload.sub,
          },
          include: {
-            items: {
+            product: {
                include: {
-                  product: true,
+                  brand: true,
+                  categories: {
+                     include: {
+                        category: true,
+                     },
+                  },
+                  pricingTiers: true,
                },
             },
          },
       })
 
-      return NextResponse.json(cart)
+      return NextResponse.json({ items: cartItems })
    } catch (error) {
-      console.error('[PRODUCT_DELETE]', error)
-      return new NextResponse('Internal error', { status: 500 })
+      console.error('Error updating cart:', error)
+      return NextResponse.json(
+         { error: 'Internal server error' },
+         { status: 500 }
+      )
    }
 }

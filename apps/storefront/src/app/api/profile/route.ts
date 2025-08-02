@@ -1,49 +1,54 @@
-import prisma from '@/lib/prisma'
-import { getErrorResponse } from '@/lib/utils'
 import { NextRequest, NextResponse } from 'next/server'
-import { z } from 'zod'
+import prisma from '@/lib/prisma'
+import { verifyJWT } from '@/lib/jwt'
 
-const updateProfileSchema = z.object({
-  name: z.string().min(2, 'Nama minimal 2 karakter').optional(),
-  phone: z.string().min(10, 'Nomor telepon tidak valid').optional(),
-  taxInformation: z.any().optional(),
-  communicationPreferences: z.any().optional(),
-})
-
-export async function PUT(req: NextRequest) {
+export async function PUT(request: NextRequest) {
   try {
-    const userId = req.headers.get('X-USER-ID')
-    
-    if (!userId) {
-      return getErrorResponse(401, 'Unauthorized')
+    const token = request.cookies.get('token')?.value
+
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      )
     }
 
-    const body = await req.json()
-    const data = updateProfileSchema.parse(body)
-
-    // Check if phone number is already taken by another customer
-    if (data.phone) {
-      const existingCustomer = await prisma.customer.findFirst({
-        where: {
-          phone: data.phone,
-          id: { not: userId },
-        },
-      })
-
-      if (existingCustomer) {
-        return getErrorResponse(409, 'Nomor telepon sudah digunakan')
-      }
+    const payload = await verifyJWT(token) as any
+    if (!payload || typeof payload.sub !== 'string') {
+      return NextResponse.json(
+        { error: 'Invalid token' },
+        { status: 401 }
+      )
     }
 
-    // Update customer profile
-    const updatedCustomer = await prisma.customer.update({
-      where: { id: userId },
-      data: {
-        ...(data.name && { name: data.name }),
-        ...(data.phone && { phone: data.phone }),
-        ...(data.taxInformation && { taxInformation: data.taxInformation }),
-        ...(data.communicationPreferences && { communicationPreferences: data.communicationPreferences }),
+    const { name, phone } = await request.json()
+
+    if (!name || !phone) {
+      return NextResponse.json(
+        { error: 'Nama dan nomor telepon diperlukan' },
+        { status: 400 }
+      )
+    }
+
+    // Check if phone is already used by another customer
+    const existingPhone = await prisma.customer.findFirst({
+      where: {
+        phone,
+        id: { not: payload.sub },
       },
+    })
+
+    if (existingPhone) {
+      return NextResponse.json(
+        { error: 'Nomor telepon sudah digunakan' },
+        { status: 409 }
+      )
+    }
+
+    // Update customer
+    const customer = await prisma.customer.update({
+      where: { id: payload.sub },
+      data: { name, phone },
       include: {
         company: true,
         addresses: {
@@ -53,29 +58,28 @@ export async function PUT(req: NextRequest) {
     })
 
     return NextResponse.json({
-      success: true,
       message: 'Profil berhasil diperbarui',
       customer: {
-        id: updatedCustomer.id,
-        email: updatedCustomer.email,
-        name: updatedCustomer.name,
-        phone: updatedCustomer.phone,
-        type: updatedCustomer.type,
-        isEmailVerified: updatedCustomer.isEmailVerified,
-        isPhoneVerified: updatedCustomer.isPhoneVerified,
-        taxInformation: updatedCustomer.taxInformation,
-        communicationPreferences: updatedCustomer.communicationPreferences,
-        company: updatedCustomer.company,
-        addresses: updatedCustomer.addresses,
+        id: customer.id,
+        email: customer.email,
+        name: customer.name,
+        phone: customer.phone,
+        type: customer.type,
+        isEmailVerified: customer.isEmailVerified,
+        isPhoneVerified: customer.isPhoneVerified,
+        taxInformation: customer.taxInformation,
+        communicationPreferences: customer.communicationPreferences,
+        company: customer.company,
+        addresses: customer.addresses,
+        createdAt: customer.createdAt.toISOString(),
       },
     })
+
   } catch (error) {
     console.error('Update profile error:', error)
-    
-    if (error instanceof z.ZodError) {
-      return getErrorResponse(400, error.errors[0].message)
-    }
-
-    return getErrorResponse(500, 'Terjadi kesalahan server')
+    return NextResponse.json(
+      { error: 'Terjadi kesalahan internal server' },
+      { status: 500 }
+    )
   }
 }

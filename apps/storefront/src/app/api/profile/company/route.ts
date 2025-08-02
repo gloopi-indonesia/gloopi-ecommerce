@@ -1,100 +1,115 @@
-import prisma from '@/lib/prisma'
-import { getErrorResponse } from '@/lib/utils'
 import { NextRequest, NextResponse } from 'next/server'
-import { z } from 'zod'
+import prisma from '@/lib/prisma'
+import { verifyJWT } from '@/lib/jwt'
 
-const updateCompanySchema = z.object({
-  name: z.string().min(2, 'Nama perusahaan minimal 2 karakter').optional(),
-  registrationNumber: z.string().optional(),
-  taxId: z.string().optional(),
-  industry: z.enum(['MEDICAL', 'MANUFACTURING', 'FOOD', 'OTHER']).optional(),
-  email: z.string().email('Email tidak valid').optional(),
-  phone: z.string().optional(),
-  website: z.string().url('Website tidak valid').optional(),
-  contactPerson: z.string().optional(),
-  address: z.string().optional(),
-  city: z.string().optional(),
-  province: z.string().optional(),
-  postalCode: z.string().optional(),
-})
-
-export async function PUT(req: NextRequest) {
+export async function PUT(request: NextRequest) {
   try {
-    const userId = req.headers.get('X-USER-ID')
-    
-    if (!userId) {
-      return getErrorResponse(401, 'Unauthorized')
+    const token = request.cookies.get('token')?.value
+
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      )
     }
 
-    const body = await req.json()
-    const data = updateCompanySchema.parse(body)
+    const payload = await verifyJWT(token) as any
+    if (!payload || typeof payload.sub !== 'string') {
+      return NextResponse.json(
+        { error: 'Invalid token' },
+        { status: 401 }
+      )
+    }
 
-    // Get customer with company
+    // Get customer to check if they have a company
     const customer = await prisma.customer.findUnique({
-      where: { id: userId },
+      where: { id: payload.sub },
       include: { company: true },
     })
 
     if (!customer) {
-      return getErrorResponse(404, 'Customer tidak ditemukan')
+      return NextResponse.json(
+        { error: 'Customer not found' },
+        { status: 404 }
+      )
     }
 
-    if (customer.type !== 'B2B') {
-      return getErrorResponse(400, 'Hanya customer B2B yang dapat mengupdate profil perusahaan')
+    if (customer.type !== 'B2B' || !customer.companyId) {
+      return NextResponse.json(
+        { error: 'Only B2B customers can update company information' },
+        { status: 403 }
+      )
     }
 
-    if (!customer.companyId) {
-      return getErrorResponse(400, 'Customer tidak memiliki perusahaan')
+    const {
+      name,
+      registrationNumber,
+      taxId,
+      industry,
+      email,
+      phone,
+      website,
+      contactPerson,
+      address,
+      city,
+      province,
+      postalCode,
+    } = await request.json()
+
+    if (!name || !registrationNumber || !taxId || !contactPerson) {
+      return NextResponse.json(
+        { error: 'Nama perusahaan, nomor registrasi, NPWP, dan nama kontak diperlukan' },
+        { status: 400 }
+      )
     }
 
-    // Check if registration number or tax ID is already taken
-    if (data.registrationNumber || data.taxId) {
-      const existingCompany = await prisma.company.findFirst({
-        where: {
-          OR: [
-            ...(data.registrationNumber ? [{ registrationNumber: data.registrationNumber }] : []),
-            ...(data.taxId ? [{ taxId: data.taxId }] : []),
-          ],
-          id: { not: customer.companyId },
-        },
-      })
+    // Check if registration number or tax ID is already used by another company
+    const existingCompany = await prisma.company.findFirst({
+      where: {
+        OR: [
+          { registrationNumber },
+          { taxId },
+        ],
+        id: { not: customer.companyId },
+      },
+    })
 
-      if (existingCompany) {
-        return getErrorResponse(409, 'Nomor registrasi atau NPWP sudah digunakan')
-      }
+    if (existingCompany) {
+      return NextResponse.json(
+        { error: 'Nomor registrasi atau NPWP sudah digunakan' },
+        { status: 409 }
+      )
     }
 
     // Update company
-    const updatedCompany = await prisma.company.update({
+    const company = await prisma.company.update({
       where: { id: customer.companyId },
       data: {
-        ...(data.name && { name: data.name }),
-        ...(data.registrationNumber && { registrationNumber: data.registrationNumber }),
-        ...(data.taxId && { taxId: data.taxId }),
-        ...(data.industry && { industry: data.industry }),
-        ...(data.email && { email: data.email }),
-        ...(data.phone && { phone: data.phone }),
-        ...(data.website && { website: data.website }),
-        ...(data.contactPerson && { contactPerson: data.contactPerson }),
-        ...(data.address && { address: data.address }),
-        ...(data.city && { city: data.city }),
-        ...(data.province && { province: data.province }),
-        ...(data.postalCode && { postalCode: data.postalCode }),
+        name,
+        registrationNumber,
+        taxId,
+        industry: industry || 'OTHER',
+        email: email || null,
+        phone: phone || null,
+        website: website || null,
+        contactPerson,
+        address: address || '',
+        city: city || '',
+        province: province || '',
+        postalCode: postalCode || '',
       },
     })
 
     return NextResponse.json({
-      success: true,
       message: 'Profil perusahaan berhasil diperbarui',
-      company: updatedCompany,
+      company,
     })
-  } catch (error) {
-    console.error('Update company profile error:', error)
-    
-    if (error instanceof z.ZodError) {
-      return getErrorResponse(400, error.errors[0].message)
-    }
 
-    return getErrorResponse(500, 'Terjadi kesalahan server')
+  } catch (error) {
+    console.error('Update company error:', error)
+    return NextResponse.json(
+      { error: 'Terjadi kesalahan internal server' },
+      { status: 500 }
+    )
   }
 }

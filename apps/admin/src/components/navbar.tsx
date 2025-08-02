@@ -1,5 +1,6 @@
 import { MainNav } from '@/components/main-nav'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { FollowUpNotifications } from '@/components/follow-up-notifications'
 import Link from 'next/link'
 
 import { LogoutButton } from './logout-button'
@@ -14,6 +15,7 @@ export default async function Navbar() {
             <MainNav />
          </div>
          <div className="flex items-center gap-2">
+            <FollowUpNotifications />
             <ThemeToggle />
             <LogoutButton />
          </div>

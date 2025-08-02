@@ -1,42 +1,62 @@
-import prisma from '@/lib/prisma'
-import { getErrorResponse } from '@/lib/utils'
-import bcrypt from 'bcryptjs'
 import { NextRequest, NextResponse } from 'next/server'
-import { z } from 'zod'
+import prisma from '@/lib/prisma'
+import { verifyJWT } from '@/lib/jwt'
+import bcrypt from 'bcryptjs'
 
-const changePasswordSchema = z.object({
-  currentPassword: z.string().min(1, 'Password saat ini diperlukan'),
-  newPassword: z.string().min(6, 'Password baru minimal 6 karakter'),
-})
-
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const userId = req.headers.get('X-USER-ID')
-    
-    if (!userId) {
-      return getErrorResponse(401, 'Unauthorized')
+    const token = request.cookies.get('token')?.value
+
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      )
     }
 
-    const body = await req.json()
-    const { currentPassword, newPassword } = changePasswordSchema.parse(body)
+    const payload = await verifyJWT(token) as any
+    if (!payload || typeof payload.sub !== 'string') {
+      return NextResponse.json(
+        { error: 'Invalid token' },
+        { status: 401 }
+      )
+    }
 
-    // Get current customer
+    const { currentPassword, newPassword } = await request.json()
+
+    if (!currentPassword || !newPassword) {
+      return NextResponse.json(
+        { error: 'Password lama dan baru diperlukan' },
+        { status: 400 }
+      )
+    }
+
+    if (newPassword.length < 6) {
+      return NextResponse.json(
+        { error: 'Password baru minimal 6 karakter' },
+        { status: 400 }
+      )
+    }
+
+    // Get customer
     const customer = await prisma.customer.findUnique({
-      where: { id: userId },
+      where: { id: payload.sub },
     })
 
-    if (!customer) {
-      return getErrorResponse(404, 'Customer tidak ditemukan')
-    }
-
-    if (!customer.password) {
-      return getErrorResponse(400, 'Akun belum memiliki password')
+    if (!customer || !customer.password) {
+      return NextResponse.json(
+        { error: 'Customer not found' },
+        { status: 404 }
+      )
     }
 
     // Verify current password
-    const isCurrentPasswordValid = await bcrypt.compare(currentPassword, customer.password)
-    if (!isCurrentPasswordValid) {
-      return getErrorResponse(400, 'Password saat ini salah')
+    const isValidPassword = await bcrypt.compare(currentPassword, customer.password)
+    if (!isValidPassword) {
+      return NextResponse.json(
+        { error: 'Password lama tidak benar' },
+        { status: 400 }
+      )
     }
 
     // Hash new password
@@ -44,21 +64,19 @@ export async function POST(req: NextRequest) {
 
     // Update password
     await prisma.customer.update({
-      where: { id: userId },
+      where: { id: customer.id },
       data: { password: hashedNewPassword },
     })
 
     return NextResponse.json({
-      success: true,
       message: 'Password berhasil diubah',
     })
+
   } catch (error) {
     console.error('Change password error:', error)
-    
-    if (error instanceof z.ZodError) {
-      return getErrorResponse(400, error.errors[0].message)
-    }
-
-    return getErrorResponse(500, 'Terjadi kesalahan server')
+    return NextResponse.json(
+      { error: 'Terjadi kesalahan internal server' },
+      { status: 500 }
+    )
   }
 }

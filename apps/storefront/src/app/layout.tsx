@@ -9,12 +9,46 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
-   title: 'Gloopi - Sarung Tangan Industri',
-   description: 'Platform e-commerce untuk sarung tangan industri berkualitas tinggi',
-   keywords: ['sarung tangan', 'industri', 'medis', 'manufaktur', 'makanan'],
+   title: 'Gloopi - Sarung Tangan Industri Berkualitas Tinggi',
+   description: 'Platform e-commerce terpercaya untuk sarung tangan industri berkualitas tinggi. Melayani sektor medis, manufaktur, dan makanan di seluruh Indonesia.',
+   keywords: [
+      'sarung tangan industri',
+      'sarung tangan medis',
+      'sarung tangan manufaktur', 
+      'sarung tangan makanan',
+      'gloves indonesia',
+      'industrial gloves',
+      'medical gloves',
+      'food grade gloves',
+      'gloopi'
+   ],
    authors: [{ name: 'Gloopi Team' }],
    creator: 'Gloopi',
    publisher: 'Gloopi',
+   openGraph: {
+      title: 'Gloopi - Sarung Tangan Industri Berkualitas Tinggi',
+      description: 'Platform e-commerce terpercaya untuk sarung tangan industri berkualitas tinggi. Melayani sektor medis, manufaktur, dan makanan di seluruh Indonesia.',
+      url: 'https://gloopi.id',
+      siteName: 'Gloopi',
+      locale: 'id_ID',
+      type: 'website',
+   },
+   twitter: {
+      card: 'summary_large_image',
+      title: 'Gloopi - Sarung Tangan Industri Berkualitas Tinggi',
+      description: 'Platform e-commerce terpercaya untuk sarung tangan industri berkualitas tinggi.',
+   },
+   robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+         index: true,
+         follow: true,
+         'max-video-preview': -1,
+         'max-image-preview': 'large',
+         'max-snippet': -1,
+      },
+   },
 }
 
 export default async function RootLayout({

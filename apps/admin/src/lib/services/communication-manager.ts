@@ -267,7 +267,7 @@ export class CommunicationManager {
   async completeFollowUp(
     followUpId: string,
     notes?: string,
-    adminUserId?: string
+    _adminUserId?: string
   ): Promise<FollowUp> {
     try {
       const followUp = await prisma.followUp.update({
@@ -370,7 +370,7 @@ export class CommunicationManager {
         communicationsByType,
         communicationsByStatus,
         followUps,
-        quotationConversions,
+        _quotationConversions,
       ] = await Promise.all([
         prisma.communication.count({ where: whereClause }),
         

@@ -1,133 +1,139 @@
-import { signJWT } from '@/lib/jwt'
-import prisma from '@/lib/prisma'
-import { getErrorResponse } from '@/lib/utils'
-import bcrypt from 'bcryptjs'
 import { NextRequest, NextResponse } from 'next/server'
-import { z } from 'zod'
-import crypto from 'crypto'
+import prisma from '@/lib/prisma'
+import { signJWT } from '@/lib/jwt'
+import bcrypt from 'bcryptjs'
+import { isEmailValid } from '@persepolis/regex'
 
-const registerSchema = z.object({
-  email: z.string().email('Email tidak valid'),
-  name: z.string().min(2, 'Nama minimal 2 karakter'),
-  phone: z.string().min(10, 'Nomor telepon tidak valid'),
-  password: z.string().min(6, 'Password minimal 6 karakter'),
-  type: z.enum(['B2B', 'B2C']).default('B2C'),
-  // Company information for B2B customers
-  companyName: z.string().optional(),
-  companyRegistrationNumber: z.string().optional(),
-  companyTaxId: z.string().optional(),
-  industry: z.enum(['MEDICAL', 'MANUFACTURING', 'FOOD', 'OTHER']).optional(),
-  companyAddress: z.string().optional(),
-  companyCity: z.string().optional(),
-  companyProvince: z.string().optional(),
-  companyPostalCode: z.string().optional(),
-  contactPerson: z.string().optional(),
-})
-
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const body = await req.json()
-    const data = registerSchema.parse(body)
+    const data = await request.json()
+    const {
+      email,
+      name,
+      phone,
+      password,
+      type,
+      // Company fields for B2B
+      companyName,
+      companyRegistrationNumber,
+      companyTaxId,
+      industry,
+      companyAddress,
+      companyCity,
+      companyProvince,
+      companyPostalCode,
+      contactPerson,
+    } = data
 
-    // Check if customer already exists
-    const existingCustomer = await prisma.customer.findFirst({
-      where: {
-        OR: [
-          { email: data.email.toLowerCase() },
-          { phone: data.phone },
-        ],
-      },
+    // Validation
+    if (!email || !name || !phone || !password || !type) {
+      return NextResponse.json(
+        { error: 'Semua field wajib diisi' },
+        { status: 400 }
+      )
+    }
+
+    if (!isEmailValid(email)) {
+      return NextResponse.json(
+        { error: 'Format email tidak valid' },
+        { status: 400 }
+      )
+    }
+
+    if (password.length < 6) {
+      return NextResponse.json(
+        { error: 'Password minimal 6 karakter' },
+        { status: 400 }
+      )
+    }
+
+    if (type === 'B2B' && (!companyName || !companyRegistrationNumber || !companyTaxId)) {
+      return NextResponse.json(
+        { error: 'Informasi perusahaan wajib diisi untuk akun B2B' },
+        { status: 400 }
+      )
+    }
+
+    // Check if email already exists
+    const existingCustomer = await prisma.customer.findUnique({
+      where: { email: email.toLowerCase() },
     })
 
     if (existingCustomer) {
-      if (existingCustomer.email === data.email.toLowerCase()) {
-        return getErrorResponse(409, 'Email sudah terdaftar')
-      }
-      if (existingCustomer.phone === data.phone) {
-        return getErrorResponse(409, 'Nomor telepon sudah terdaftar')
-      }
+      return NextResponse.json(
+        { error: 'Email sudah terdaftar' },
+        { status: 409 }
+      )
+    }
+
+    // Check if phone already exists
+    const existingPhone = await prisma.customer.findUnique({
+      where: { phone },
+    })
+
+    if (existingPhone) {
+      return NextResponse.json(
+        { error: 'Nomor telepon sudah terdaftar' },
+        { status: 409 }
+      )
     }
 
     // Hash password
-    const hashedPassword = await bcrypt.hash(data.password, 12)
+    const hashedPassword = await bcrypt.hash(password, 12)
 
-    // Generate email verification token
-    const emailVerificationToken = crypto.randomBytes(32).toString('hex')
+    // Create customer and company in transaction
+    const result = await prisma.$transaction(async (tx) => {
+      let companyId = null
 
-    let companyId: string | undefined
-
-    // Create company if B2B customer
-    if (data.type === 'B2B' && data.companyName) {
-      // Check if company already exists
-      const existingCompany = await prisma.company.findFirst({
-        where: {
-          OR: [
-            { registrationNumber: data.companyRegistrationNumber || '' },
-            { taxId: data.companyTaxId || '' },
-          ],
-        },
-      })
-
-      if (existingCompany) {
-        return getErrorResponse(409, 'Perusahaan sudah terdaftar')
+      // Create company if B2B
+      if (type === 'B2B') {
+        const company = await tx.company.create({
+          data: {
+            name: companyName,
+            registrationNumber: companyRegistrationNumber,
+            taxId: companyTaxId,
+            industry: industry || 'OTHER',
+            contactPerson: contactPerson || name,
+            address: companyAddress || '',
+            city: companyCity || '',
+            province: companyProvince || '',
+            postalCode: companyPostalCode || '',
+            country: 'Indonesia',
+          },
+        })
+        companyId = company.id
       }
 
-      const company = await prisma.company.create({
+      // Create customer
+      const customer = await tx.customer.create({
         data: {
-          name: data.companyName,
-          registrationNumber: data.companyRegistrationNumber || '',
-          taxId: data.companyTaxId || '',
-          industry: data.industry || 'OTHER',
-          address: data.companyAddress || '',
-          city: data.companyCity || '',
-          province: data.companyProvince || '',
-          postalCode: data.companyPostalCode || '',
-          contactPerson: data.contactPerson || data.name,
+          email: email.toLowerCase(),
+          name,
+          phone,
+          password: hashedPassword,
+          type,
+          companyId,
+        },
+        include: {
+          company: true,
         },
       })
 
-      companyId = company.id
-    }
-
-    // Create customer
-    const customer = await prisma.customer.create({
-      data: {
-        email: data.email.toLowerCase(),
-        name: data.name,
-        phone: data.phone,
-        password: hashedPassword,
-        type: data.type,
-        companyId,
-        emailVerificationToken,
-      },
-      include: {
-        company: true,
-      },
+      return customer
     })
 
     // Generate JWT token
-    const token = await signJWT(
-      { sub: customer.id },
-      { exp: '30d' }
-    )
+    const token = await signJWT({ sub: result.id })
 
-    // Create response with token in httpOnly cookie
+    // Set cookie
     const response = NextResponse.json({
-      success: true,
       message: 'Registrasi berhasil',
       customer: {
-        id: customer.id,
-        email: customer.email,
-        name: customer.name,
-        phone: customer.phone,
-        type: customer.type,
-        isEmailVerified: customer.isEmailVerified,
-        isPhoneVerified: customer.isPhoneVerified,
-        company: customer.company ? {
-          id: customer.company.id,
-          name: customer.company.name,
-          industry: customer.company.industry,
-        } : null,
+        id: result.id,
+        email: result.email,
+        name: result.name,
+        type: result.type,
+        company: result.company,
       },
     })
 
@@ -135,24 +141,16 @@ export async function POST(req: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 30, // 30 days
-    })
-
-    response.cookies.set('logged-in', 'true', {
-      httpOnly: false,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 30, // 30 days
+      maxAge: 60 * 60 * 24 * 7, // 7 days
     })
 
     return response
-  } catch (error) {
-    console.error('Customer registration error:', error)
-    
-    if (error instanceof z.ZodError) {
-      return getErrorResponse(400, error.errors[0].message)
-    }
 
-    return getErrorResponse(500, 'Terjadi kesalahan server')
+  } catch (error) {
+    console.error('Registration error:', error)
+    return NextResponse.json(
+      { error: 'Terjadi kesalahan internal server' },
+      { status: 500 }
+    )
   }
 }

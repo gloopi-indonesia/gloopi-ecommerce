@@ -46,7 +46,7 @@ function LoginDialog() {
       <Link href="/login">
          <Button className="font-medium flex gap-2">
             <LogInIcon className="h-4" />
-            <p>Login</p>
+            <p>Masuk</p>
          </Button>
       </Link>
    )

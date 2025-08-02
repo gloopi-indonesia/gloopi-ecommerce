@@ -3,14 +3,21 @@
 import { Separator } from '@/components/native/separator'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
-import { useAuthenticated } from '@/hooks/useAuthentication'
+
 import { isVariableValid } from '@/lib/utils'
 import { useCartContext } from '@/state/Cart'
 import Link from 'next/link'
 
 export function Receipt() {
-   const { authenticated } = useAuthenticated()
    const { loading, cart } = useCartContext()
+
+   function formatIDR(amount: number) {
+      return new Intl.NumberFormat('id-ID', {
+         style: 'currency',
+         currency: 'IDR',
+         minimumFractionDigits: 0,
+      }).format(amount / 100) // Convert from cents
+   }
 
    function calculatePayableCost() {
       let totalAmount = 0,
@@ -18,21 +25,23 @@ export function Receipt() {
 
       if (isVariableValid(cart?.items)) {
          for (const item of cart.items) {
-            totalAmount += (item?.count || 0) * (item?.product?.price || 0)
-            discountAmount += (item?.count || 0) * (item?.product?.discount || 0)
+            const quantity = item?.quantity || item?.count || 0
+            const price = item?.product?.basePrice || item?.product?.price || 0
+            totalAmount += quantity * price
+            discountAmount += quantity * (item?.product?.discount || 0)
          }
       }
 
       const afterDiscountAmount = totalAmount - discountAmount
-      const taxAmount = afterDiscountAmount * 0.09
+      const taxAmount = afterDiscountAmount * 0.11 // 11% PPN for Indonesia
       const payableAmount = afterDiscountAmount + taxAmount
 
       return {
-         totalAmount: totalAmount.toFixed(2),
-         discountAmount: discountAmount.toFixed(2),
-         afterDiscountAmount: afterDiscountAmount.toFixed(2),
-         taxAmount: taxAmount.toFixed(2),
-         payableAmount: payableAmount.toFixed(2),
+         totalAmount,
+         discountAmount,
+         afterDiscountAmount,
+         taxAmount,
+         payableAmount,
       }
    }
 
@@ -44,28 +53,31 @@ export function Receipt() {
          <CardContent className="p-4 text-sm">
             <div className="block space-y-[1vh]">
                <div className="flex justify-between">
-                  <p>Total Amount</p>
-                  <h3>${calculatePayableCost().totalAmount}</h3>
+                  <p>Subtotal</p>
+                  <h3>{formatIDR(calculatePayableCost().totalAmount)}</h3>
                </div>
                <div className="flex justify-between">
-                  <p>Discount Amount</p>
-                  <h3>${calculatePayableCost().discountAmount}</h3>
+                  <p>Diskon</p>
+                  <h3>{formatIDR(calculatePayableCost().discountAmount)}</h3>
                </div>
                <div className="flex justify-between">
-                  <p>Tax Amount</p>
-                  <h3>${calculatePayableCost().taxAmount}</h3>
+                  <p>PPN (11%)</p>
+                  <h3>{formatIDR(calculatePayableCost().taxAmount)}</h3>
                </div>
             </div>
             <Separator className="my-4" />
             <div className="flex justify-between">
-               <p>Payable Amount</p>
-               <h3>${calculatePayableCost().payableAmount}</h3>
+               <p>Total Estimasi</p>
+               <h3>{formatIDR(calculatePayableCost().payableAmount)}</h3>
+            </div>
+            <div className="text-xs text-muted-foreground mt-2">
+               * Harga final akan dikonfirmasi dalam penawaran resmi
             </div>
          </CardContent>
          <Separator />
          <CardFooter>
             <Link
-               href={authenticated ? '/checkout' : '/login'}
+               href="/checkout"
                className="w-full"
             >
                <Button
@@ -74,7 +86,7 @@ export function Receipt() {
                   }
                   className="w-full"
                >
-                  Checkout
+                  Minta Penawaran
                </Button>
             </Link>
          </CardFooter>

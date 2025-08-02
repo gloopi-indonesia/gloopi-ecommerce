@@ -13,7 +13,7 @@ const createFollowUpSchema = z.object({
   notes: z.string().optional(),
 });
 
-const sendFollowUpMessageSchema = z.object({
+const _sendFollowUpMessageSchema = z.object({
   customerId: z.string().min(1, 'Customer ID is required'),
   quotationId: z.string().optional(),
   templateName: z.string().min(1, 'Template name is required'),

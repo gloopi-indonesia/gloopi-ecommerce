@@ -58,12 +58,12 @@ export const Item = ({ cartItem }) => {
                method: 'POST',
                body: JSON.stringify({
                   productId,
-                  count:
+                  quantity:
                      getCountInCart({ cartItems: cart?.items, productId }) + 1,
                }),
                cache: 'no-store',
                headers: {
-                  'Content-Type': 'application/json-string',
+                  'Content-Type': 'application/json',
                },
             })
 
@@ -115,12 +115,12 @@ export const Item = ({ cartItem }) => {
                method: 'POST',
                body: JSON.stringify({
                   productId,
-                  count:
+                  quantity:
                      getCountInCart({ cartItems: cart?.items, productId }) - 1,
                }),
                cache: 'no-store',
                headers: {
-                  'Content-Type': 'application/json-string',
+                  'Content-Type': 'application/json',
                },
             })
 
@@ -173,12 +173,12 @@ export const Item = ({ cartItem }) => {
          )
 
       if (count === 0) {
-         return <Button onClick={onAddToCart}>🛒 Add to Cart</Button>
+         return <Button onClick={onAddToCart}>🛒 Tambah ke Keranjang</Button>
       }
 
       if (count > 0) {
          return (
-            <>
+            <div className="flex items-center space-x-2">
                <Button variant="outline" size="icon" onClick={onRemoveFromCart}>
                   {count === 1 ? (
                      <X className="h-4" />
@@ -197,27 +197,37 @@ export const Item = ({ cartItem }) => {
                >
                   <PlusIcon className="h-4" />
                </Button>
-            </>
+            </div>
          )
       }
    }
 
+   function formatIDR(amount: number) {
+      return new Intl.NumberFormat('id-ID', {
+         style: 'currency',
+         currency: 'IDR',
+         minimumFractionDigits: 0,
+      }).format(amount / 100) // Convert from cents
+   }
+
    function Price() {
+      const basePrice = product?.basePrice || product?.price || 0
+      
       if (product?.discount > 0) {
-         const price = product?.price - product?.discount
-         const percentage = (product?.discount / product?.price) * 100
+         const price = basePrice - product?.discount
+         const percentage = (product?.discount / basePrice) * 100
          return (
             <div className="flex gap-2 items-center">
                <Badge className="flex gap-4" variant="destructive">
-                  <div className="line-through">${product?.price}</div>
+                  <div className="line-through">{formatIDR(basePrice)}</div>
                   <div>%{percentage.toFixed(2)}</div>
                </Badge>
-               <h2 className="">${price.toFixed(2)}</h2>
+               <h2 className="">{formatIDR(price)}</h2>
             </div>
          )
       }
 
-      return <h2>${product?.price}</h2>
+      return <h2>{formatIDR(basePrice)}</h2>
    }
    return (
       <Card>

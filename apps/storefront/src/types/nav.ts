@@ -5,4 +5,5 @@ export interface NavItem {
    external?: boolean
    icon?: any
    label?: string
+   items?: NavItem[]
 }

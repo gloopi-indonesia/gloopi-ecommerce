@@ -14,15 +14,6 @@ import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { forwardRef } from 'react'
 
-const components: { title: string; href: string; description: string }[] = [
-   {
-      title: 'Alert Dialog',
-      href: '/docs/primitives/alert-dialog',
-      description:
-         'A modal dialog that interrupts the user with important content and expects a response.',
-   },
-]
-
 export function MainNav() {
    return (
       <div className="hidden md:flex gap-4">
@@ -44,7 +35,7 @@ export function NavMenu() {
                <Link href="/products" legacyBehavior passHref>
                   <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                      <div className="font-normal text-foreground/70">
-                        Products
+                        Semua Produk
                      </div>
                   </NavigationMenuLink>
                </Link>
@@ -52,60 +43,55 @@ export function NavMenu() {
             <NavigationMenuItem>
                <NavigationMenuTrigger>
                   <div className="font-normal text-foreground/70">
-                     Categories
+                     Industri
                   </div>
                </NavigationMenuTrigger>
                <NavigationMenuContent>
-                  <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
+                  <ul className="grid gap-3 p-4 md:w-[500px] lg:w-[600px] lg:grid-cols-[.75fr_1fr]">
                      <li className="row-span-3">
                         <NavigationMenuLink asChild>
                            <Link
-                              className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
-                              href="/"
+                              className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 p-6 no-underline outline-none focus:shadow-md"
+                              href="/products"
                            >
-                              <div className="mb-2 mt-4 text-lg font-medium">
-                                 shadcn/ui
+                              <div className="mb-2 mt-4 text-lg font-medium text-blue-900 dark:text-blue-100">
+                                 {config.name}
                               </div>
-                              <p className="text-sm leading-tight text-muted-foreground">
-                                 Beautifully designed components built with
-                                 Radix UI and Tailwind CSS.
+                              <p className="text-sm leading-tight text-blue-700 dark:text-blue-200">
+                                 {config.tagline} - Melayani berbagai industri di Indonesia
                               </p>
                            </Link>
                         </NavigationMenuLink>
                      </li>
-                     <ListItem href="/docs" title="Introduction">
-                        Re-usable components built using Radix UI and Tailwind
-                        CSS.
-                     </ListItem>
-                     <ListItem href="/docs/installation" title="Installation">
-                        How to install dependencies and structure your app.
-                     </ListItem>
-                     <ListItem
-                        href="/docs/primitives/typography"
-                        title="Typography"
-                     >
-                        Styles for headings, paragraphs, lists...etc
-                     </ListItem>
-                  </ul>
-               </NavigationMenuContent>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-               <NavigationMenuTrigger>
-                  <div className="font-normal text-foreground/70">Brands</div>
-               </NavigationMenuTrigger>
-               <NavigationMenuContent>
-                  <ul className="grid w-[400px] gap-2 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
-                     {components.map((component) => (
-                        <ListItem
-                           key={component.title}
-                           title={component.title}
-                           href={component.href}
+                     {config.industries.map((industry) => (
+                        <ListItem 
+                           key={industry.slug}
+                           href={`/products?industry=${industry.slug}`} 
+                           title={`${industry.icon} ${industry.name}`}
                         >
-                           {component.description}
+                           {industry.description}
                         </ListItem>
                      ))}
                   </ul>
                </NavigationMenuContent>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+               <Link href="/about" legacyBehavior passHref>
+                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                     <div className="font-normal text-foreground/70">
+                        Tentang Kami
+                     </div>
+                  </NavigationMenuLink>
+               </Link>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+               <Link href="/contact" legacyBehavior passHref>
+                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                     <div className="font-normal text-foreground/70">
+                        Kontak
+                     </div>
+                  </NavigationMenuLink>
+               </Link>
             </NavigationMenuItem>
          </NavigationMenuList>
       </NavigationMenu>

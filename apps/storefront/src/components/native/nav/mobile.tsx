@@ -56,6 +56,7 @@ export function MobileNav() {
                               key={item.href}
                               href={item.href}
                               onOpenChange={setOpen}
+                              className="text-foreground/70 hover:text-foreground"
                            >
                               {item.title}
                            </MobileLink>
@@ -65,7 +66,21 @@ export function MobileNav() {
                <div className="flex flex-col space-y-2">
                   {docsConfig.sidebarNav.map((item, index) => (
                      <div key={index} className="flex flex-col space-y-3 pt-6">
-                        <h4 className="font-medium">{item.title}</h4>
+                        <h4 className="font-medium text-sm uppercase tracking-wide text-muted-foreground">
+                           {item.title}
+                        </h4>
+                        {item.items?.map((subItem) => (
+                           subItem.href && (
+                              <MobileLink
+                                 key={subItem.href}
+                                 href={subItem.href}
+                                 onOpenChange={setOpen}
+                                 className="text-foreground/70 hover:text-foreground pl-4"
+                              >
+                                 {subItem.title}
+                              </MobileLink>
+                           )
+                        ))}
                      </div>
                   ))}
                </div>

@@ -47,6 +47,11 @@ export function MainNav({
          active: pathname.includes(`/companies`),
       },
       {
+         href: `/follow-ups`,
+         label: 'Follow-ups',
+         active: pathname.includes(`/follow-ups`),
+      },
+      {
          href: `/payments`,
          label: 'Payments',
          active: pathname.includes(`/payments`),
@@ -65,6 +70,16 @@ export function MainNav({
          href: `/codes`,
          label: 'Codes',
          active: pathname.includes(`/codes`),
+      },
+      {
+         href: `/reports`,
+         label: 'Reports',
+         active: pathname.includes(`/reports`),
+      },
+      {
+         href: `/analytics`,
+         label: 'Analytics',
+         active: pathname.includes(`/analytics`),
       },
    ]
 

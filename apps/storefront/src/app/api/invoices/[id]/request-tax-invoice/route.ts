@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import prisma from '@/lib/prisma'
 import { verifyJWT } from '@/lib/jwt'
 
 export async function POST(
@@ -7,102 +7,112 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    // Verify customer authentication
-    const token = request.cookies.get('customer-token')?.value
+    const token = request.cookies.get('token')?.value
+
     if (!token) {
-      return NextResponse.json({ error: 'Tidak terautentikasi' }, { status: 401 })
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      )
     }
 
-    const payload = await verifyJWT(token)
-    if (!payload) {
-      return NextResponse.json({ error: 'Token tidak valid' }, { status: 401 })
+    const payload = await verifyJWT(token) as any
+    if (!payload || typeof payload.sub !== 'string') {
+      return NextResponse.json(
+        { error: 'Invalid token' },
+        { status: 401 }
+      )
     }
 
-    // Get invoice and verify ownership
-    const invoice = await prisma.invoice.findUnique({
-      where: { id: params.id },
+    // Get the invoice and verify ownership
+    const invoice = await prisma.invoice.findFirst({
+      where: {
+        id: params.id,
+        customerId: payload.sub,
+      },
       include: {
-        customer: true,
-        order: true
-      }
+        customer: {
+          include: {
+            company: true,
+          },
+        },
+        taxInvoice: true,
+      },
     })
 
     if (!invoice) {
       return NextResponse.json(
-        { error: 'Faktur tidak ditemukan' },
+        { error: 'Invoice not found' },
         { status: 404 }
-      )
-    }
-
-    if (invoice.customerId !== payload.sub) {
-      return NextResponse.json(
-        { error: 'Anda tidak memiliki akses ke faktur ini' },
-        { status: 403 }
       )
     }
 
     // Check if invoice is paid
     if (invoice.status !== 'PAID') {
       return NextResponse.json(
-        { error: 'Faktur pajak hanya dapat diminta untuk faktur yang sudah dibayar' },
+        { error: 'Tax invoice can only be requested for paid invoices' },
         { status: 400 }
       )
     }
 
-    // Check if tax invoice already requested
-    if (invoice.taxInvoiceRequested) {
+    // Check if tax invoice already exists
+    if (invoice.taxInvoice) {
       return NextResponse.json(
-        { error: 'Faktur pajak sudah diminta untuk faktur ini' },
+        { error: 'Tax invoice already exists for this invoice' },
         { status: 400 }
       )
     }
 
-    // Check if customer is B2B
-    if (invoice.customer.type !== 'B2B') {
+    // Check if customer is B2B and has company information
+    if (invoice.customer.type !== 'B2B' || !invoice.customer.company) {
       return NextResponse.json(
-        { error: 'Faktur pajak hanya tersedia untuk pelanggan B2B' },
+        { error: 'Tax invoice can only be requested by B2B customers with complete company information' },
         { status: 400 }
       )
     }
 
-    // Check if customer has company profile
-    const customer = await prisma.customer.findUnique({
-      where: { id: payload.sub },
-      include: { company: true }
-    })
+    // Get tax information from request body (if customer needs to provide additional info)
+    const { taxInformation } = await request.json()
 
-    if (!customer?.company) {
-      return NextResponse.json(
-        { error: 'Profil perusahaan diperlukan untuk meminta faktur pajak' },
-        { status: 400 }
-      )
+    // Update customer tax information if provided
+    if (taxInformation) {
+      await prisma.customer.update({
+        where: { id: payload.sub },
+        data: {
+          taxInformation: taxInformation,
+        },
+      })
     }
 
-    // Validate company tax information
-    if (!customer.company.taxId) {
-      return NextResponse.json(
-        { error: 'NPWP perusahaan diperlukan untuk faktur pajak' },
-        { status: 400 }
-      )
-    }
-
-    // Update invoice to mark tax invoice as requested
+    // Mark invoice as tax invoice requested
     await prisma.invoice.update({
       where: { id: params.id },
-      data: { taxInvoiceRequested: true }
+      data: {
+        taxInvoiceRequested: true,
+      },
     })
 
-    // TODO: Send notification to admin about tax invoice request
-    // This could be implemented with email notification or admin dashboard notification
+    // TODO: Here you would typically:
+    // 1. Send notification to admin about tax invoice request
+    // 2. Create a task/notification in admin system
+    // 3. Send email notification to admin
+    
+    // For now, we'll just log it
+    console.log(`Tax invoice requested for invoice ${invoice.invoiceNumber} by customer ${invoice.customer.name}`)
 
     return NextResponse.json({
-      success: true,
-      message: 'Permintaan faktur pajak berhasil dikirim. Admin akan memproses permintaan Anda.'
+      message: 'Permintaan faktur pajak berhasil dikirim. Admin akan memproses permintaan Anda dalam 1-2 hari kerja.',
+      invoice: {
+        id: invoice.id,
+        invoiceNumber: invoice.invoiceNumber,
+        taxInvoiceRequested: true,
+      },
     })
+
   } catch (error) {
     console.error('Error requesting tax invoice:', error)
     return NextResponse.json(
-      { error: 'Gagal meminta faktur pajak' },
+      { error: 'Terjadi kesalahan internal server' },
       { status: 500 }
     )
   }

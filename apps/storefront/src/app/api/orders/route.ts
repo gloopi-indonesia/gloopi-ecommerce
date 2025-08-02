@@ -1,153 +1,104 @@
-import config from '@/config/site'
-import Mail from '@/emails/order_notification_owner'
+import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
-import { sendMail } from '@persepolis/mail'
-import { render } from '@react-email/render'
-import { NextResponse } from 'next/server'
+import { verifyJWT } from '@/lib/jwt'
 
-export async function GET(req: Request) {
-   try {
-      const userId = req.headers.get('X-USER-ID')
+export async function GET(request: NextRequest) {
+  try {
+    const token = request.cookies.get('token')?.value
 
-      if (!userId) {
-         return new NextResponse('Unauthorized', { status: 401 })
-      }
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      )
+    }
 
-      const orders = await prisma.order.findMany({
-         where: {
-            userId,
-         },
-         include: {
+    const payload = await verifyJWT(token) as any
+    if (!payload || typeof payload.sub !== 'string') {
+      return NextResponse.json(
+        { error: 'Invalid token' },
+        { status: 401 }
+      )
+    }
+
+    const orders = await prisma.order.findMany({
+      where: {
+        customerId: payload.sub,
+      },
+      select: {
+        id: true,
+        orderNumber: true,
+        status: true,
+        totalAmount: true,
+        trackingNumber: true,
+        shippedAt: true,
+        deliveredAt: true,
+        createdAt: true,
+        updatedAt: true,
+        shippingAddress: {
+          select: {
             address: true,
-            payments: true,
-            refund: true,
-            orderItems: true,
-         },
-      })
-
-      return NextResponse.json(orders)
-   } catch (error) {
-      console.error('[ORDERS_GET]', error)
-      return new NextResponse('Internal error', { status: 500 })
-   }
-}
-
-export async function POST(req: Request) {
-   try {
-      const userId = req.headers.get('X-USER-ID')
-
-      if (!userId) {
-         return new NextResponse('Unauthorized', { status: 401 })
-      }
-
-      const { addressId, discountCode } = await req.json()
-
-      if (discountCode) {
-         await prisma.discountCode.findUniqueOrThrow({
-            where: {
-               code: discountCode,
-               stock: {
-                  gte: 1,
-               },
+            city: true,
+            province: true,
+            postalCode: true,
+          },
+        },
+        items: {
+          select: {
+            id: true,
+            quantity: true,
+            unitPrice: true,
+            totalPrice: true,
+            product: {
+              select: {
+                id: true,
+                name: true,
+                sku: true,
+                images: true,
+              },
             },
-         })
-      }
+          },
+        },
+        invoice: {
+          select: {
+            id: true,
+            invoiceNumber: true,
+            status: true,
+            dueDate: true,
+            paidAt: true,
+            totalAmount: true,
+            taxInvoiceRequested: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
 
-      const cart = await prisma.cart.findUniqueOrThrow({
-         where: {
-            userId,
-         },
-         include: {
-            items: {
-               include: {
-                  product: true,
-               },
-            },
-         },
-      })
+    // Transform the data for better frontend consumption
+    const ordersWithFormatting = orders.map(order => ({
+      ...order,
+      createdAt: order.createdAt.toISOString(),
+      updatedAt: order.updatedAt.toISOString(),
+      shippedAt: order.shippedAt?.toISOString() || null,
+      deliveredAt: order.deliveredAt?.toISOString() || null,
+      invoice: order.invoice ? {
+        ...order.invoice,
+        dueDate: order.invoice.dueDate.toISOString(),
+        paidAt: order.invoice.paidAt?.toISOString() || null,
+      } : null,
+    }))
 
-      const { tax, total, discount, payable } = calculateCosts({ cart })
+    return NextResponse.json({
+      orders: ordersWithFormatting,
+    })
 
-      const order = await prisma.order.create({
-         data: {
-            user: {
-               connect: {
-                  id: userId,
-               },
-            },
-            status: 'Processing',
-            total,
-            tax,
-            payable,
-            discount,
-            shipping: 0,
-            address: {
-               connect: { id: addressId },
-            },
-            orderItems: {
-               create: cart.items.map((orderItem) => ({
-                  count: orderItem.count,
-                  price: orderItem.product.price,
-                  discount: orderItem.product.discount,
-                  product: {
-                     connect: {
-                        id: orderItem.productId,
-                     },
-                  },
-               })),
-            },
-         },
-      })
-
-      const owners = await prisma.owner.findMany()
-
-      const _notifications = await prisma.notification.createMany({
-         data: owners.map((owner) => ({
-            userId: owner.id,
-            content: `Order #${order.number} was created was created with a value of $${payable}.`,
-         })),
-      })
-
-      for (const owner of owners) {
-         await sendMail({
-            name: config.name,
-            to: owner.email,
-            subject: 'An order was created.',
-            html: await render(
-               Mail({
-                  id: order.id,
-                  payable: payable.toFixed(2),
-                  orderNum: order.number.toString(),
-               })
-            ),
-         })
-      }
-
-      return NextResponse.json(order)
-   } catch (error) {
-      console.error('[ORDER_POST]', error)
-      return new NextResponse('Internal error', { status: 500 })
-   }
-}
-
-function calculateCosts({ cart }) {
-   let total = 0,
-      discount = 0
-
-   for (const item of cart.items || []) {
-      total += (item?.count || 0) * (item?.product?.price || 0)
-      discount += (item?.count || 0) * (item?.product?.discount || 0)
-   }
-
-   const afterDiscount = total - discount
-   const tax = afterDiscount * 0.09
-   const payable = afterDiscount + tax
-
-   return {
-      total: parseFloat(total.toFixed(2)),
-      discount: parseFloat(discount.toFixed(2)),
-      afterDiscount: parseFloat(afterDiscount.toFixed(2)),
-      tax: parseFloat(tax.toFixed(2)),
-      payable: parseFloat(payable.toFixed(2)),
-   }
+  } catch (error) {
+    console.error('Error fetching orders:', error)
+    return NextResponse.json(
+      { error: 'Terjadi kesalahan internal server' },
+      { status: 500 }
+    )
+  }
 }

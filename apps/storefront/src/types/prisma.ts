@@ -5,7 +5,12 @@ export type CartItemWithProduct = Prisma.CartItemGetPayload<{
       product: {
          include: {
             brand: true
-            categories: true
+            categories: {
+               include: {
+                  category: true
+               }
+            }
+            pricingTiers: true
          }
       }
    }
@@ -14,16 +19,34 @@ export type CartItemWithProduct = Prisma.CartItemGetPayload<{
 export type ProductWithIncludes = Prisma.ProductGetPayload<{
    include: {
       brand: true
-      categories: true
+      categories: {
+         include: {
+            category: true
+         }
+      }
+      pricingTiers: true
    }
 }>
 
-export type UserWithIncludes = Prisma.UserGetPayload<{
+export type ProductDetailWithIncludes = Prisma.ProductGetPayload<{
+   include: {
+      brand: true
+      categories: {
+         include: {
+            category: true
+         }
+      }
+      pricingTiers: true
+   }
+}>
+
+export type CustomerWithIncludes = Prisma.CustomerGetPayload<{
    include: {
       addresses: true
+      company: true
       orders: {
          include: {
-            orderItems: {
+            items: {
                include: {
                   product: true
                }
@@ -35,30 +58,52 @@ export type UserWithIncludes = Prisma.UserGetPayload<{
 
 export type OrderWithIncludes = Prisma.OrderGetPayload<{
    include: {
-      address: true
-      discountCode: true
-      user: {
+      shippingAddress: true
+      customer: {
          include: {
             addresses: true
-            payments: true
-            orders: true
+            company: true
          }
       }
-      payments: {
-         include: {
-            provider: true
-         }
-      }
-      orderItems: {
+      items: {
          include: {
             product: {
                include: {
                   brand: true
-                  categories: true
+                  categories: {
+                     include: {
+                        category: true
+                     }
+                  }
                }
             }
          }
       }
-      refund: true
+      invoice: true
+   }
+}>
+
+export type QuotationWithIncludes = Prisma.QuotationGetPayload<{
+   include: {
+      customer: {
+         include: {
+            company: true
+         }
+      }
+      items: {
+         include: {
+            product: {
+               include: {
+                  brand: true
+                  categories: {
+                     include: {
+                        category: true
+                     }
+                  }
+               }
+            }
+         }
+      }
+      shippingAddress: true
    }
 }>

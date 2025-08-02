@@ -1,65 +1,39 @@
 /**
- * Format IDR currency with proper Indonesian formatting
+ * Format currency in Indonesian Rupiah
+ * @param amount Amount in cents (smallest currency unit)
+ * @returns Formatted currency string
  */
-export function formatIDR(amountInCents: number): string {
-  const amount = amountInCents / 100
+export function formatIDR(amount: number): string {
+  // Convert from cents to rupiah
+  const rupiah = amount / 100
+  
   return new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(amount)
+  }).format(rupiah)
 }
 
 /**
- * Format IDR currency without currency symbol
+ * Format number with Indonesian thousand separators
+ * @param amount Amount to format
+ * @returns Formatted number string
  */
-export function formatIDRNumber(amountInCents: number): string {
-  const amount = amountInCents / 100
-  return new Intl.NumberFormat('id-ID', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount)
+export function formatNumber(amount: number): string {
+  return new Intl.NumberFormat('id-ID').format(amount)
 }
 
 /**
- * Parse IDR string to cents
+ * Parse formatted IDR string back to cents
+ * @param formatted Formatted currency string
+ * @returns Amount in cents
  */
-export function parseIDRToCents(idrString: string): number {
-  // Remove currency symbols and separators
-  const cleanString = idrString.replace(/[Rp\s.,]/g, '')
-  const amount = parseFloat(cleanString) || 0
-  return Math.round(amount * 100)
-}
-
-/**
- * Convert rupiah to cents
- */
-export function rupiahToCents(rupiah: number): number {
-  return Math.round(rupiah * 100)
-}
-
-/**
- * Convert cents to rupiah
- */
-export function centsToRupiah(cents: number): number {
-  return cents / 100
-}
-
-/**
- * Calculate price based on quantity and pricing tiers
- */
-export function calculatePrice(basePrice: number, pricingTiers: any[], quantity: number): number {
-  // Find the appropriate pricing tier
-  const applicableTier = pricingTiers
-    .filter(tier => 
-      quantity >= tier.minQuantity && 
-      (tier.maxQuantity === null || quantity <= tier.maxQuantity)
-    )
-    .sort((a, b) => b.minQuantity - a.minQuantity)[0] // Get the highest applicable tier
-
-  // Use tier price if available, otherwise use base price
-  const unitPrice = applicableTier ? applicableTier.pricePerUnit : basePrice
+export function parseIDR(formatted: string): number {
+  // Remove currency symbol and separators, then convert to number
+  const cleaned = formatted.replace(/[^\d]/g, '')
+  const rupiah = parseInt(cleaned, 10) || 0
   
-  return unitPrice * quantity
+  // Convert to cents
+  return rupiah * 100
 }

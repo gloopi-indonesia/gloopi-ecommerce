@@ -1,26 +1,69 @@
+import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
-import { NextResponse } from 'next/server'
 
-export async function GET(
-   req: Request,
-   { params }: { params: { productId: string } }
-) {
-   try {
-      if (!params.productId) {
-         return new NextResponse('Product id is required', { status: 400 })
+interface RouteParams {
+  params: {
+    productId: string
+  }
+}
+
+export async function GET(request: NextRequest, { params }: RouteParams) {
+  try {
+    const product = await prisma.product.findUnique({
+      where: { 
+        id: params.productId,
+        isActive: true // Only show active products on storefront
+      },
+      include: {
+        brand: true,
+        categories: {
+          include: { category: true }
+        },
+        pricingTiers: {
+          where: { isActive: true },
+          orderBy: { minQuantity: 'asc' }
+        }
       }
+    })
 
-      const product = await prisma.product.findUniqueOrThrow({
-         where: { id: params.productId },
-         include: {
-            categories: true,
-            brand: true,
-         },
-      })
+    if (!product) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'PRODUCT_NOT_FOUND',
+            message: 'Product not found'
+          }
+        },
+        { status: 404 }
+      )
+    }
 
-      return NextResponse.json(product)
-   } catch (error) {
-      console.error('[PRODUCT_DELETE]', error)
-      return new NextResponse('Internal error', { status: 500 })
-   }
+    // Convert prices back to rupiah for response
+    const productWithFormattedPrices = {
+      ...product,
+      basePrice: product.basePrice / 100,
+      pricingTiers: product.pricingTiers.map(tier => ({
+        ...tier,
+        pricePerUnit: tier.pricePerUnit / 100
+      }))
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: productWithFormattedPrices
+    })
+  } catch (error) {
+    console.error('Error fetching product:', error)
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'FETCH_PRODUCT_ERROR',
+          message: 'Failed to fetch product'
+        }
+      },
+      { status: 500 }
+    )
+  }
 }

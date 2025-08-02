@@ -1,21 +1,29 @@
-import { signJWT } from '@/lib/jwt'
-import prisma from '@/lib/prisma'
-import { getErrorResponse } from '@/lib/utils'
-import bcrypt from 'bcryptjs'
 import { NextRequest, NextResponse } from 'next/server'
-import { z } from 'zod'
+import prisma from '@/lib/prisma'
+import { signJWT } from '@/lib/jwt'
+import bcrypt from 'bcryptjs'
+import { isEmailValid } from '@persepolis/regex'
 
-const loginSchema = z.object({
-  email: z.string().email('Email tidak valid'),
-  password: z.string().min(1, 'Password diperlukan'),
-})
-
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const body = await req.json()
-    const { email, password } = loginSchema.parse(body)
+    const { email, password } = await request.json()
 
-    // Find customer by email
+    // Validation
+    if (!email || !password) {
+      return NextResponse.json(
+        { error: 'Email dan password diperlukan' },
+        { status: 400 }
+      )
+    }
+
+    if (!isEmailValid(email)) {
+      return NextResponse.json(
+        { error: 'Format email tidak valid' },
+        { status: 400 }
+      )
+    }
+
+    // Find customer
     const customer = await prisma.customer.findUnique({
       where: { email: email.toLowerCase() },
       include: {
@@ -23,43 +31,34 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    if (!customer) {
-      return getErrorResponse(401, 'Email atau password salah')
-    }
-
-    if (!customer.password) {
-      return getErrorResponse(401, 'Akun belum memiliki password. Silakan daftar terlebih dahulu.')
+    if (!customer || !customer.password) {
+      return NextResponse.json(
+        { error: 'Email atau password salah' },
+        { status: 401 }
+      )
     }
 
     // Verify password
-    const isPasswordValid = await bcrypt.compare(password, customer.password)
-    if (!isPasswordValid) {
-      return getErrorResponse(401, 'Email atau password salah')
+    const isValidPassword = await bcrypt.compare(password, customer.password)
+    if (!isValidPassword) {
+      return NextResponse.json(
+        { error: 'Email atau password salah' },
+        { status: 401 }
+      )
     }
 
     // Generate JWT token
-    const token = await signJWT(
-      { sub: customer.id },
-      { exp: '30d' }
-    )
+    const token = await signJWT({ sub: customer.id })
 
-    // Create response with token in httpOnly cookie
+    // Set cookie
     const response = NextResponse.json({
-      success: true,
       message: 'Login berhasil',
       customer: {
         id: customer.id,
         email: customer.email,
         name: customer.name,
-        phone: customer.phone,
         type: customer.type,
-        isEmailVerified: customer.isEmailVerified,
-        isPhoneVerified: customer.isPhoneVerified,
-        company: customer.company ? {
-          id: customer.company.id,
-          name: customer.company.name,
-          industry: customer.company.industry,
-        } : null,
+        company: customer.company,
       },
     })
 
@@ -67,24 +66,16 @@ export async function POST(req: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 30, // 30 days
-    })
-
-    response.cookies.set('logged-in', 'true', {
-      httpOnly: false,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 30, // 30 days
+      maxAge: 60 * 60 * 24 * 7, // 7 days
     })
 
     return response
-  } catch (error) {
-    console.error('Customer login error:', error)
-    
-    if (error instanceof z.ZodError) {
-      return getErrorResponse(400, error.errors[0].message)
-    }
 
-    return getErrorResponse(500, 'Terjadi kesalahan server')
+  } catch (error) {
+    console.error('Login error:', error)
+    return NextResponse.json(
+      { error: 'Terjadi kesalahan internal server' },
+      { status: 500 }
+    )
   }
 }

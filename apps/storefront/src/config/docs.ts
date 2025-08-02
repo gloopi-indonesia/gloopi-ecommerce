@@ -8,40 +8,69 @@ interface DocsConfig {
 export const docsConfig: DocsConfig = {
    mainNav: [
       {
-         title: 'Documentation',
-         href: '/docs',
+         title: 'Semua Produk',
+         href: '/products',
       },
-
       {
-         title: 'GitHub',
-         href: 'https://github.com/sesto-dev',
-         external: true,
+         title: 'Tentang Kami',
+         href: '/about',
+      },
+      {
+         title: 'Kontak',
+         href: '/contact',
       },
    ],
    sidebarNav: [
       {
-         title: 'Products',
-         href: '/products',
+         title: 'Industri',
+         items: [
+            {
+               title: '🏥 Medis',
+               href: '/products?industry=medical',
+            },
+            {
+               title: '🏭 Manufaktur',
+               href: '/products?industry=manufacturing',
+            },
+            {
+               title: '🍽️ Makanan',
+               href: '/products?industry=food',
+            },
+         ],
       },
       {
-         title: 'Blog',
-         href: '/blog',
+         title: 'Akun Saya',
+         items: [
+            {
+               title: 'Pesanan',
+               href: '/profile/orders',
+            },
+            {
+               title: 'Faktur',
+               href: '/profile/invoices',
+            },
+            {
+               title: 'Profil',
+               href: '/profile',
+            },
+         ],
       },
       {
-         title: 'Orders',
-         href: '/profile/orders',
-      },
-      {
-         title: 'Payments',
-         href: '/profile/payments',
-      },
-      {
-         title: 'Contact',
-         href: '/contact',
-      },
-      {
-         title: 'About',
-         href: '/about',
+         title: 'Bantuan',
+         items: [
+            {
+               title: 'FAQ',
+               href: '/faq',
+            },
+            {
+               title: 'Cara Pemesanan',
+               href: '/how-to-order',
+            },
+            {
+               title: 'Hubungi Kami',
+               href: '/contact',
+            },
+         ],
       },
    ],
 }

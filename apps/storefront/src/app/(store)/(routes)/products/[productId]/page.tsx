@@ -1,9 +1,10 @@
 import Carousel from '@/components/native/Carousel'
 import prisma from '@/lib/prisma'
-import { isVariableValid } from '@/lib/utils'
+
 import { ChevronRightIcon } from 'lucide-react'
 import type { Metadata, ResolvingMetadata } from 'next'
 import Link from 'next/link'
+import { notFound } from 'next/navigation'
 
 import { DataSection } from './components/data'
 
@@ -22,17 +23,25 @@ export async function generateMetadata(
       },
    })
 
+   if (!product) {
+      return {
+         title: 'Produk Tidak Ditemukan',
+         description: 'Produk yang Anda cari tidak ditemukan.',
+      }
+   }
+
    return {
-      title: product.title,
-      description: product.description,
-      keywords: product.keywords,
+      title: `${product.name} - Gloopi`,
+      description: product.description || `${product.name} - Sarung tangan industri berkualitas tinggi`,
       openGraph: {
-         images: product.images,
+         title: product.name,
+         description: product.description || `${product.name} - Sarung tangan industri berkualitas tinggi`,
+         images: product.images.length > 0 ? [product.images[0]] : [],
       },
    }
 }
 
-export default async function Product({
+export default async function ProductDetail({
    params,
 }: {
    params: { productId: string }
@@ -40,58 +49,94 @@ export default async function Product({
    const product = await prisma.product.findUnique({
       where: {
          id: params.productId,
+         isActive: true,
       },
       include: {
          brand: true,
-         categories: true,
+         categories: {
+            include: {
+               category: true,
+            },
+         },
+         pricingTiers: {
+            orderBy: {
+               minQuantity: 'asc',
+            },
+         },
       },
    })
 
-   if (isVariableValid(product)) {
-      return (
-         <>
-            <Breadcrumbs product={product} />
-            <div className="mt-6 grid grid-cols-1 gap-2 md:grid-cols-3">
-               <ImageColumn product={product} />
-               <DataSection product={product} />
-            </div>
-         </>
-      )
+   if (!product) {
+      notFound()
    }
-}
 
-const ImageColumn = ({ product }) => {
    return (
-      <div className="relative min-h-[50vh] w-full col-span-1">
-         <Carousel images={product?.images} />
+      <div className="container mx-auto px-4 py-8">
+         <Breadcrumbs product={product} />
+         <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-2">
+            <ImageColumn product={product} />
+            <DataSection product={product} />
+         </div>
       </div>
    )
 }
 
-const Breadcrumbs = ({ product }) => {
+const ImageColumn = ({ product }: { product: any }) => {
+   return (
+      <div className="relative">
+         {product.images && product.images.length > 0 ? (
+            <Carousel images={product.images} />
+         ) : (
+            <div className="aspect-square bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
+               <span className="text-muted-foreground">Tidak ada gambar</span>
+            </div>
+         )}
+      </div>
+   )
+}
+
+const Breadcrumbs = ({ product }: { product: any }) => {
+   const primaryCategory = product.categories[0]?.category
+
    return (
       <nav className="flex text-muted-foreground" aria-label="Breadcrumb">
-         <ol className="inline-flex items-center gap-2">
+         <ol className="inline-flex items-center gap-2 text-sm">
             <li className="inline-flex items-center">
                <Link
                   href="/"
-                  className="inline-flex items-center text-sm font-medium"
+                  className="inline-flex items-center font-medium hover:text-primary transition-colors"
                >
-                  Home
+                  Beranda
                </Link>
             </li>
             <li>
                <div className="flex items-center gap-2">
-                  <ChevronRightIcon className="h-4" />
-                  <Link className="text-sm font-medium" href="/products">
-                     Products
+                  <ChevronRightIcon className="h-4 w-4" />
+                  <Link 
+                     className="font-medium hover:text-primary transition-colors" 
+                     href="/products"
+                  >
+                     Produk
                   </Link>
                </div>
             </li>
+            {primaryCategory && (
+               <li>
+                  <div className="flex items-center gap-2">
+                     <ChevronRightIcon className="h-4 w-4" />
+                     <Link 
+                        className="font-medium hover:text-primary transition-colors" 
+                        href={`/products?category=${encodeURIComponent(primaryCategory.name)}`}
+                     >
+                        {primaryCategory.name}
+                     </Link>
+                  </div>
+               </li>
+            )}
             <li aria-current="page">
                <div className="flex items-center gap-2">
-                  <ChevronRightIcon className="h-4" />
-                  <span className="text-sm font-medium">{product?.title}</span>
+                  <ChevronRightIcon className="h-4 w-4" />
+                  <span className="font-medium text-foreground">{product.name}</span>
                </div>
             </li>
          </ol>

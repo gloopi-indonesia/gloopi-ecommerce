@@ -1,17 +1,28 @@
-import prisma from '@/lib/prisma'
-import { getErrorResponse } from '@/lib/utils'
 import { NextRequest, NextResponse } from 'next/server'
+import prisma from '@/lib/prisma'
+import { verifyJWT } from '@/lib/jwt'
 
-export async function GET(req: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
-    const userId = req.headers.get('X-USER-ID')
-    
-    if (!userId) {
-      return getErrorResponse(401, 'Unauthorized')
+    const token = request.cookies.get('token')?.value
+
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      )
+    }
+
+    const payload = await verifyJWT(token) as any
+    if (!payload || typeof payload.sub !== 'string') {
+      return NextResponse.json(
+        { error: 'Invalid token' },
+        { status: 401 }
+      )
     }
 
     const customer = await prisma.customer.findUnique({
-      where: { id: userId },
+      where: { id: payload.sub },
       include: {
         company: true,
         addresses: {
@@ -21,11 +32,13 @@ export async function GET(req: NextRequest) {
     })
 
     if (!customer) {
-      return getErrorResponse(404, 'Customer tidak ditemukan')
+      return NextResponse.json(
+        { error: 'Customer not found' },
+        { status: 404 }
+      )
     }
 
     return NextResponse.json({
-      success: true,
       customer: {
         id: customer.id,
         email: customer.email,
@@ -36,28 +49,17 @@ export async function GET(req: NextRequest) {
         isPhoneVerified: customer.isPhoneVerified,
         taxInformation: customer.taxInformation,
         communicationPreferences: customer.communicationPreferences,
-        company: customer.company ? {
-          id: customer.company.id,
-          name: customer.company.name,
-          registrationNumber: customer.company.registrationNumber,
-          taxId: customer.company.taxId,
-          industry: customer.company.industry,
-          email: customer.company.email,
-          phone: customer.company.phone,
-          website: customer.company.website,
-          contactPerson: customer.company.contactPerson,
-          address: customer.company.address,
-          city: customer.company.city,
-          province: customer.company.province,
-          postalCode: customer.company.postalCode,
-          country: customer.company.country,
-        } : null,
+        company: customer.company,
         addresses: customer.addresses,
-        createdAt: customer.createdAt,
+        createdAt: customer.createdAt.toISOString(),
       },
     })
+
   } catch (error) {
     console.error('Get customer error:', error)
-    return getErrorResponse(500, 'Terjadi kesalahan server')
+    return NextResponse.json(
+      { error: 'Terjadi kesalahan internal server' },
+      { status: 500 }
+    )
   }
 }

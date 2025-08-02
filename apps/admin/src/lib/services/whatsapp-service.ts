@@ -127,7 +127,7 @@ export class PhoneNumberValidator {
   }
 
   static cleanPhoneNumber(phoneNumber: string): string {
-    return phoneNumber.replace(/[\s\-\(\)]/g, '');
+    return phoneNumber.replace(/[\s\-()]/g, '');
   }
 
   static formatToInternational(phoneNumber: string): string {
@@ -483,7 +483,7 @@ export class WhatsAppService {
    */
   private async handleIncomingMessage(
     message: any,
-    contact?: { profile: { name: string }; wa_id: string }
+    _contact?: { profile: { name: string }; wa_id: string }
   ): Promise<void> {
     try {
       // Find customer by phone number
