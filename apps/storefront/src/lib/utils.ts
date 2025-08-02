@@ -7,9 +7,16 @@ export function cn(...inputs: ClassValue[]) {
    return twMerge(clsx(inputs))
 }
 
+// Re-export localization utilities
+export { formatIDR, formatIDRNumber, formatIDRCompact } from './localization/currency'
+export { formatIndonesianDate, formatIndonesianDateTime, formatRelativeTime } from './localization/date'
+export { formatIndonesianNumber, formatCompactNumber } from './localization/number'
+export { getErrorMessage, getSuccessMessage, getUILabel } from './localization/messages'
+
+// Legacy date formatter - updated to use Indonesian format
 export function formatDate(input: string | number): string {
    const date = new Date(input)
-   return date.toLocaleDateString('en-US', {
+   return date.toLocaleDateString('id-ID', {
       month: 'long',
       day: 'numeric',
       year: 'numeric',

@@ -7,20 +7,25 @@ export function cn(...inputs: ClassValue[]) {
    return twMerge(clsx(inputs))
 }
 
+// Re-export localization utilities for backward compatibility
+export { formatIDR, formatIDRNumber, formatIDRCompact } from './localization/currency'
+export { formatIndonesianDate, formatIndonesianDateTime, formatRelativeTime } from './localization/date'
+export { formatIndonesianNumber, formatCompactNumber } from './localization/number'
+
+// Legacy formatters for backward compatibility
 export const formatter = new Intl.NumberFormat('en-US', {
    style: 'currency',
    currency: 'USD',
    maximumFractionDigits: 2,
 })
 
-// Indonesian Rupiah formatter
 export const idrFormatter = new Intl.NumberFormat('id-ID', {
    style: 'currency',
    currency: 'IDR',
    maximumFractionDigits: 0,
 })
 
-// Format IDR from cents (stored as integers)
+// Format IDR from cents (stored as integers) - legacy function
 export const formatIDRFromCents = (cents: number): string => {
    return idrFormatter.format(cents / 100)
 }

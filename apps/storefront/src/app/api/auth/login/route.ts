@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate JWT token
-    const token = await signJWT({ sub: customer.id })
+    const token = await signJWT({ sub: customer.id }, { exp: '7d' })
 
     // Set cookie
     const response = NextResponse.json({
