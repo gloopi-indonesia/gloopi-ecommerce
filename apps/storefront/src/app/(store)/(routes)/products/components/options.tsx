@@ -120,19 +120,20 @@ export function UseCaseFilter({ initialValue }: { initialValue?: UseCase }) {
    const router = useRouter()
    const pathname = usePathname()
    const searchParams = useSearchParams()
-   const [value, setValue] = useState<UseCase | ''>('')
+   const [value, setValue] = useState<UseCase | 'ALL'>('ALL')
 
    useEffect(() => {
       if (initialValue) setValue(initialValue)
+      else setValue('ALL')
    }, [initialValue])
 
    return (
       <Select
          value={value}
-         onValueChange={(currentValue: UseCase | '') => {
+         onValueChange={(currentValue: UseCase | 'ALL') => {
             const current = new URLSearchParams(Array.from(searchParams.entries()))
 
-            if (currentValue) {
+            if (currentValue && currentValue !== 'ALL') {
                current.set('useCase', currentValue)
             } else {
                current.delete('useCase')
@@ -150,7 +151,7 @@ export function UseCaseFilter({ initialValue }: { initialValue?: UseCase }) {
             <SelectValue placeholder="Kategori Penggunaan" />
          </SelectTrigger>
          <SelectContent>
-            <SelectItem value="">Semua Kategori</SelectItem>
+            <SelectItem value="ALL">Semua Kategori</SelectItem>
             <SelectItem value="MEDICAL">Medis</SelectItem>
             <SelectItem value="MANUFACTURING">Manufaktur</SelectItem>
             <SelectItem value="FOOD">Makanan</SelectItem>
@@ -160,12 +161,12 @@ export function UseCaseFilter({ initialValue }: { initialValue?: UseCase }) {
    )
 }
 
-export function CategoriesCombobox({ 
-   categories, 
-   initialCategory 
-}: { 
+export function CategoriesCombobox({
+   categories,
+   initialCategory
+}: {
    categories: Array<{ id: string; name: string }>
-   initialCategory?: string 
+   initialCategory?: string
 }) {
    const router = useRouter()
    const pathname = usePathname()
@@ -174,7 +175,7 @@ export function CategoriesCombobox({
    const [value, setValue] = useState('')
 
    function getCategoryName() {
-      const category = categories.find(cat => 
+      const category = categories.find(cat =>
          cat.name.toLowerCase() === value.toLowerCase()
       )
       return category?.name
@@ -260,12 +261,12 @@ export function CategoriesCombobox({
    )
 }
 
-export function BrandCombobox({ 
-   brands, 
-   initialBrand 
-}: { 
+export function BrandCombobox({
+   brands,
+   initialBrand
+}: {
    brands: Array<{ id: string; name: string }>
-   initialBrand?: string 
+   initialBrand?: string
 }) {
    const router = useRouter()
    const pathname = usePathname()
@@ -274,7 +275,7 @@ export function BrandCombobox({
    const [value, setValue] = useState('')
 
    function getBrandName() {
-      const brand = brands.find(b => 
+      const brand = brands.find(b =>
          b.name.toLowerCase() === value.toLowerCase()
       )
       return brand?.name

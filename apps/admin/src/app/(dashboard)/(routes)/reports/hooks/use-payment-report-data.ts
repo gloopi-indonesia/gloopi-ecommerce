@@ -29,20 +29,20 @@ export function usePaymentReportData(filters: PaymentReportFilters) {
    const fetchData = useCallback(async () => {
       setIsLoading(true)
       setError(null)
-      
+
       try {
          const queryParams = new URLSearchParams()
          if (filters.dateFrom) queryParams.append('dateFrom', filters.dateFrom)
          if (filters.dateTo) queryParams.append('dateTo', filters.dateTo)
          if (filters.customerFilter) queryParams.append('customer', filters.customerFilter)
-         if (filters.statusFilter) queryParams.append('status', filters.statusFilter)
+         if (filters.statusFilter && filters.statusFilter !== 'ALL') queryParams.append('status', filters.statusFilter)
 
          const response = await fetch(`/api/reports/payments?${queryParams.toString()}`)
-         
+
          if (!response.ok) {
             throw new Error('Failed to fetch payment report data')
          }
-         
+
          const result = await response.json()
          setData(result)
       } catch (err) {

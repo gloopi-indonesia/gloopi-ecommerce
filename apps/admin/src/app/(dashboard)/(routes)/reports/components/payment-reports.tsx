@@ -16,8 +16,8 @@ export function PaymentReports() {
    const [dateFrom, setDateFrom] = useState('')
    const [dateTo, setDateTo] = useState('')
    const [customerFilter, setCustomerFilter] = useState('')
-   const [statusFilter, setStatusFilter] = useState('')
-   
+   const [statusFilter, setStatusFilter] = useState('ALL')
+
    const { data, isLoading, refetch } = usePaymentReportData({
       dateFrom,
       dateTo,
@@ -43,7 +43,7 @@ export function PaymentReports() {
                statusFilter
             })
          })
-         
+
          if (response.ok) {
             const blob = await response.blob()
             const url = window.URL.createObjectURL(blob)
@@ -74,7 +74,7 @@ export function PaymentReports() {
                statusFilter
             })
          })
-         
+
          if (response.ok) {
             const blob = await response.blob()
             const url = window.URL.createObjectURL(blob)
@@ -107,7 +107,7 @@ export function PaymentReports() {
                   </div>
                </CardContent>
             </Card>
-            
+
             <Card>
                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
@@ -120,7 +120,7 @@ export function PaymentReports() {
                   </div>
                </CardContent>
             </Card>
-            
+
             <Card>
                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
@@ -133,7 +133,7 @@ export function PaymentReports() {
                   </div>
                </CardContent>
             </Card>
-            
+
             <Card>
                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium flex items-center gap-1">
@@ -171,7 +171,7 @@ export function PaymentReports() {
                         onChange={(e) => setDateFrom(e.target.value)}
                      />
                   </div>
-                  
+
                   <div className="space-y-2">
                      <Label htmlFor="dateTo">Tanggal Selesai</Label>
                      <Input
@@ -181,7 +181,7 @@ export function PaymentReports() {
                         onChange={(e) => setDateTo(e.target.value)}
                      />
                   </div>
-                  
+
                   <div className="space-y-2">
                      <Label htmlFor="customer">Pelanggan</Label>
                      <Input
@@ -191,7 +191,7 @@ export function PaymentReports() {
                         onChange={(e) => setCustomerFilter(e.target.value)}
                      />
                   </div>
-                  
+
                   <div className="space-y-2">
                      <Label htmlFor="status">Status</Label>
                      <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -199,7 +199,7 @@ export function PaymentReports() {
                            <SelectValue placeholder="Pilih status" />
                         </SelectTrigger>
                         <SelectContent>
-                           <SelectItem value="">Semua Status</SelectItem>
+                           <SelectItem value="ALL">Semua Status</SelectItem>
                            <SelectItem value="PENDING">Belum Dibayar</SelectItem>
                            <SelectItem value="PAID">Sudah Dibayar</SelectItem>
                            <SelectItem value="OVERDUE">Terlambat</SelectItem>
@@ -208,7 +208,7 @@ export function PaymentReports() {
                      </Select>
                   </div>
                </div>
-               
+
                <div className="flex gap-2 mt-4">
                   <Button onClick={handleApplyFilters} disabled={isLoading}>
                      Terapkan Filter

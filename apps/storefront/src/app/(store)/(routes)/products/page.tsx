@@ -22,18 +22,18 @@ interface SearchParams {
    page?: string
 }
 
-export default async function Products({ 
-   searchParams 
-}: { 
-   searchParams: SearchParams 
+export default async function Products({
+   searchParams
+}: {
+   searchParams: SearchParams
 }) {
-   const { 
-      sort, 
-      brand, 
-      category, 
-      useCase, 
+   const {
+      sort,
+      brand,
+      category,
+      useCase,
       search,
-      page = '1' 
+      page = '1'
    } = searchParams ?? {}
 
    const orderBy = getOrderBy(sort)
@@ -45,7 +45,7 @@ export default async function Products({
       where: { isActive: true },
       orderBy: { name: 'asc' }
    })
-   
+
    const categories = await prisma.category.findMany({
       where: { isActive: true },
       orderBy: { name: 'asc' }
@@ -133,11 +133,11 @@ export default async function Products({
             title="Katalog Produk Sarung Tangan"
             description="Temukan sarung tangan industri berkualitas tinggi untuk kebutuhan medis, manufaktur, dan makanan"
          />
-         
+
          {/* Search and Filters */}
          <div className="mb-6 space-y-4">
             <SearchInput initialValue={search} />
-            
+
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                <SortBy initialData={sort} />
                <UseCaseFilter initialValue={useCase} />
@@ -145,9 +145,9 @@ export default async function Products({
                   initialCategory={category}
                   categories={categories}
                />
-               <BrandCombobox 
-                  initialBrand={brand} 
-                  brands={brands} 
+               <BrandCombobox
+                  initialBrand={brand}
+                  brands={brands}
                />
             </div>
          </div>
@@ -165,7 +165,7 @@ export default async function Products({
          {isVariableValid(products) && products.length > 0 ? (
             <>
                <ProductGrid products={products} />
-               
+
                {/* Pagination */}
                {totalPages > 1 && (
                   <div className="mt-8 flex justify-center">
@@ -177,11 +177,10 @@ export default async function Products({
                                  ...searchParams,
                                  page: pageNum.toString(),
                               }).toString()}`}
-                              className={`px-3 py-2 rounded-md text-sm ${
-                                 pageNum === currentPage
+                              className={`px-3 py-2 rounded-md text-sm ${pageNum === currentPage
                                     ? 'bg-primary text-primary-foreground'
                                     : 'bg-muted hover:bg-muted/80'
-                              }`}
+                                 }`}
                            >
                               {pageNum}
                            </a>
@@ -214,17 +213,17 @@ export default async function Products({
 function getOrderBy(sort?: string) {
    switch (sort) {
       case 'featured':
-         return { isFeatured: 'desc' as const, createdAt: 'desc' as const }
+         return [{ isFeatured: 'desc' as const }, { createdAt: 'desc' as const }]
       case 'price_high':
-         return { basePrice: 'desc' as const }
+         return [{ basePrice: 'desc' as const }]
       case 'price_low':
-         return { basePrice: 'asc' as const }
+         return [{ basePrice: 'asc' as const }]
       case 'newest':
-         return { createdAt: 'desc' as const }
+         return [{ createdAt: 'desc' as const }]
       case 'name':
-         return { name: 'asc' as const }
+         return [{ name: 'asc' as const }]
       default:
-         return { isFeatured: 'desc' as const, createdAt: 'desc' as const }
+         return [{ isFeatured: 'desc' as const }, { createdAt: 'desc' as const }]
    }
 }
 

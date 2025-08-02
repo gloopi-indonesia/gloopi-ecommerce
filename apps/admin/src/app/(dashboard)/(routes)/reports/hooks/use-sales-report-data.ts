@@ -27,20 +27,20 @@ export function useSalesReportData(filters: SalesReportFilters) {
    const fetchData = useCallback(async () => {
       setIsLoading(true)
       setError(null)
-      
+
       try {
          const queryParams = new URLSearchParams()
          if (filters.dateFrom) queryParams.append('dateFrom', filters.dateFrom)
          if (filters.dateTo) queryParams.append('dateTo', filters.dateTo)
          if (filters.customerFilter) queryParams.append('customer', filters.customerFilter)
-         if (filters.categoryFilter) queryParams.append('category', filters.categoryFilter)
+         if (filters.categoryFilter && filters.categoryFilter !== 'ALL') queryParams.append('category', filters.categoryFilter)
 
          const response = await fetch(`/api/reports/sales?${queryParams.toString()}`)
-         
+
          if (!response.ok) {
             throw new Error('Failed to fetch sales report data')
          }
-         
+
          const result = await response.json()
          setData(result)
       } catch (err) {

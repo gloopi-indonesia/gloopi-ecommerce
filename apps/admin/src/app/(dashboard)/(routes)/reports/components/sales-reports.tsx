@@ -16,8 +16,8 @@ export function SalesReports() {
    const [dateFrom, setDateFrom] = useState('')
    const [dateTo, setDateTo] = useState('')
    const [customerFilter, setCustomerFilter] = useState('')
-   const [categoryFilter, setCategoryFilter] = useState('')
-   
+   const [categoryFilter, setCategoryFilter] = useState('ALL')
+
    const { data, isLoading, refetch } = useSalesReportData({
       dateFrom,
       dateTo,
@@ -43,7 +43,7 @@ export function SalesReports() {
                categoryFilter
             })
          })
-         
+
          if (response.ok) {
             const blob = await response.blob()
             const url = window.URL.createObjectURL(blob)
@@ -74,7 +74,7 @@ export function SalesReports() {
                categoryFilter
             })
          })
-         
+
          if (response.ok) {
             const blob = await response.blob()
             const url = window.URL.createObjectURL(blob)
@@ -107,7 +107,7 @@ export function SalesReports() {
                   </div>
                </CardContent>
             </Card>
-            
+
             <Card>
                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
@@ -120,7 +120,7 @@ export function SalesReports() {
                   </div>
                </CardContent>
             </Card>
-            
+
             <Card>
                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
@@ -154,7 +154,7 @@ export function SalesReports() {
                         onChange={(e) => setDateFrom(e.target.value)}
                      />
                   </div>
-                  
+
                   <div className="space-y-2">
                      <Label htmlFor="dateTo">Tanggal Selesai</Label>
                      <Input
@@ -164,7 +164,7 @@ export function SalesReports() {
                         onChange={(e) => setDateTo(e.target.value)}
                      />
                   </div>
-                  
+
                   <div className="space-y-2">
                      <Label htmlFor="customer">Pelanggan</Label>
                      <Input
@@ -174,7 +174,7 @@ export function SalesReports() {
                         onChange={(e) => setCustomerFilter(e.target.value)}
                      />
                   </div>
-                  
+
                   <div className="space-y-2">
                      <Label htmlFor="category">Kategori</Label>
                      <Select value={categoryFilter} onValueChange={setCategoryFilter}>
@@ -182,7 +182,7 @@ export function SalesReports() {
                            <SelectValue placeholder="Pilih kategori" />
                         </SelectTrigger>
                         <SelectContent>
-                           <SelectItem value="">Semua Kategori</SelectItem>
+                           <SelectItem value="ALL">Semua Kategori</SelectItem>
                            <SelectItem value="MEDICAL">Medis</SelectItem>
                            <SelectItem value="MANUFACTURING">Manufaktur</SelectItem>
                            <SelectItem value="FOOD">Makanan</SelectItem>
@@ -191,7 +191,7 @@ export function SalesReports() {
                      </Select>
                   </div>
                </div>
-               
+
                <div className="flex gap-2 mt-4">
                   <Button onClick={handleApplyFilters} disabled={isLoading}>
                      Terapkan Filter
